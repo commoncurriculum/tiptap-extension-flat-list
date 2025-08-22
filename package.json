@@ -1,19 +1,21 @@
 {
-  "name": "TODO",
+  "name": "tiptap-extension-flat-list",
   "version": "0.1.0",
-  "description": "TODO",
-  "author": "Matthew Weidner",
+  "description": "Tiptap extension that adds \"flat\" list items",
+  "author": "Common Curriculum, Inc.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mweidner037/TODO/issues"
+    "url": "https://github.com/commoncurriculum/tiptap-extension-flat-list/issues"
   },
-  "homepage": "https://github.com/mweidner037/TODO#readme",
+  "homepage": "https://github.com/commoncurriculum/tiptap-extension-flat-list#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mweidner037/TODO.git"
+    "url": "git+https://github.com/commoncurriculum/tiptap-extension-flat-list.git"
   },
   "keywords": [
-    "TODO"
+    "tiptap",
+    "list",
+    "quill"
   ],
   "main": "build/commonjs/index.js",
   "browser": "build/esm/index.js",
