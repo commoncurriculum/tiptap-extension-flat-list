@@ -9,6 +9,13 @@
   max-width: 720px;
   height: 500px;
   overflow-y: auto;
+
+  p,
+  ul,
+  ol {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 }
 
 .tiptap:focus {
