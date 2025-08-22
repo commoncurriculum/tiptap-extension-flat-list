@@ -72,8 +72,8 @@ export function hasNoContentBeforeChildList(
   // flatListPostprocessorPlugin or pastePlugin.
   let childToCheck = contentElement.firstChild;
   if (
-    // eslint-disable-next-line no-control-regex
     (childToCheck instanceof Text &&
+      // eslint-disable-next-line no-control-regex
       /^[ \t\r\n\u000c]*$/.test(childToCheck.wholeText)) ||
     childToCheck instanceof HTMLBRElement
   ) {

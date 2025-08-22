@@ -99,7 +99,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           return false;
         },
         contentElement: (element: HTMLElement) => {
-          let contentElement = getContentElement("task", element);
+          const contentElement = getContentElement("task", element);
           replaceParagraphsWithBreaks(contentElement);
           if (hasNoContentBeforeChildList(contentElement)) {
             // ProseMirror will ignore such an LI and only parse its child list.

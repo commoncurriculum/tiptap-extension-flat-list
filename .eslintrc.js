@@ -46,5 +46,9 @@ module.exports = {
         argsIgnorePattern: "^_",
       },
     ],
+    // Allow any for attr values.
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
   },
 };
