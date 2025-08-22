@@ -68,6 +68,55 @@ console.log(JoinListDOMSerializer.getHTML(editor));
 // instead of editor.getHTML().
 ```
 
+### Commands
+
+Note `type ListType = "ordered" | "unordered" | "task"`.
+
+#### setFlatListItem
+
+Sets a flat list item node.
+
+If `attributes.indent` is not provided and any selected nodes are already flat list nodes
+(possibly a different ListType), their indent is preserved.
+
+```ts
+editor.commands.setFlatListItem(listType: ListType, attributes?: { indent?: number; checked?: boolean })
+```
+
+#### toggleFlatListItem
+
+Toggles a flat list item node.
+
+When toggling on,
+if `attributes.indent` is not provided and any selected nodes are already flat list nodes
+(possibly a different ListType), their indent is preserved.
+
+```ts
+editor.commands.toggleFlatListItem(listType: ListType, attributes?: { indent?: number; checked?: boolean })
+```
+
+#### indentFlatListItem
+
+Dedents (un-indent) the flat list item(s) overlapping the current selection.
+If an affected item's indent is 0 and canConvert is true, the item is converted to a paragraph.
+
+This will also dedent all "descendants" of the last affected item (subsequent list items with greater indent).
+
+```ts
+editor.commands.indentFlatListItem();
+```
+
+#### dedentFlatListItem
+
+Dedents (un-indent) the flat list item(s) overlapping the current selection.
+If an affected item's indent is 0 and canConvert is true, the item is converted to a paragraph.
+
+This will also dedent all "descendants" of the last affected item (subsequent list items with greater indent).
+
+```ts
+editor.commands.dedentFlatListItem(canConvert?: boolean)
+```
+
 ## Developing
 
 - Install dependencies with `npm install`.

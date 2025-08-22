@@ -13,7 +13,7 @@ declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     flatList: {
       /**
-       * Set a flat list item node.
+       * Sets a flat list item node.
        *
        * If `attributes.indent` is not provided and any selected nodes are already flat list nodes
        * (possibly a different ListType), their indent is preserved.
@@ -27,7 +27,7 @@ declare module "@tiptap/core" {
         attributes?: { indent?: number; checked?: boolean },
       ) => ReturnType;
       /**
-       * Toggle a flat list item node.
+       * Toggles a flat list item node.
        *
        * When toggling on,
        * if `attributes.indent` is not provided and any selected nodes are already flat list nodes
@@ -42,13 +42,13 @@ declare module "@tiptap/core" {
         attributes?: { indent?: number; checked?: boolean },
       ) => ReturnType;
       /**
-       * Indent the flat list item(s) overlapping the current selection.
+       * Indents the flat list item(s) overlapping the current selection.
        *
        * A list item can be indented at most as much as its "parent" (previous list item) plus 1.
        */
       indentFlatListItem: () => ReturnType;
       /**
-       * Dedent (un-indent) the flat list item(s) overlapping the current selection.
+       * Dedents (un-indent) the flat list item(s) overlapping the current selection.
        * If an affected item's indent is 0 and canConvert is true, the item is converted to a paragraph.
        *
        * This will also dedent all "descendants" of the last affected item (subsequent list items with greater indent).
