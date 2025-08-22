@@ -32,9 +32,8 @@ const editor = new Editor({
 
 JoinListDOMSerializer.setClipboardSerializer(editor);
 
-// To get HTML that has normal HTML lists:
-//   JoinListDOMSerializer.getHTML(editor);
-// instead of editor.getHTML().
+// To get HTML that uses normal HTML lists, instead of editor.getHTML(), call:
+// JoinListDOMSerializer.getHTML(editor);
 
 // Setup buttons
 

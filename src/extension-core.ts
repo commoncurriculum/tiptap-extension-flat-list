@@ -48,7 +48,7 @@ declare module "@tiptap/core" {
        */
       indentFlatListItem: () => ReturnType;
       /**
-       * Dedents (un-indent) the flat list item(s) overlapping the current selection.
+       * Dedents (un-indents) the flat list item(s) overlapping the current selection.
        * If an affected item's indent is 0 and canConvert is true, the item is converted to a paragraph.
        *
        * This will also dedent all "descendants" of the last affected item (subsequent list items with greater indent).
