@@ -1,6 +1,6 @@
-import { Node } from "@tiptap/core"
-import type { Node as ProseMirrorNode } from "@tiptap/pm/model"
-import { taskNodeName } from "./internal/extension-names"
+import { Node } from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { taskNodeName } from "./internal/extension-names";
 import {
   computeChecked,
   computeIndent,
@@ -8,7 +8,7 @@ import {
   getContentElement,
   hasNoContentBeforeChildList,
   replaceParagraphsWithBreaks,
-} from "./internal/utils"
+} from "./internal/utils";
 
 // Based on https://github.com/ueberdosis/tiptap/blob/main/packages/extension-task-item/src/task-item.ts
 // In particular, its custom NodeView.
@@ -24,8 +24,8 @@ export interface FlatListTaskOptions {
    * }
    */
   a11y?: {
-    checkboxLabel?: (node: ProseMirrorNode, checked: boolean) => string
-  }
+    checkboxLabel?: (node: ProseMirrorNode, checked: boolean) => string;
+  };
 }
 
 /**
@@ -47,7 +47,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
   addOptions() {
     return {
       a11y: undefined,
-    }
+    };
   },
 
   addAttributes() {
@@ -69,7 +69,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         default: false,
         rendered: false,
       },
-    }
+    };
   },
 
   parseHTML() {
@@ -83,31 +83,34 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           // Since there is not standard HTML for task lists, we only look for task lists rendered by ourselves.
           // These are marked with data-task-list on the wrapping UL.
           if (element.parentElement) {
-            const attrTaskList = element.parentElement.getAttribute("data-task-list")
+            const attrTaskList =
+              element.parentElement.getAttribute("data-task-list");
             if (attrTaskList === "" || attrTaskList === "true") {
               return {
                 indent: computeIndent(element),
                 checked: computeChecked(element),
-                _isTempPropped: hasNoContentBeforeChildList(getContentElement("task", element)),
-              }
+                _isTempPropped: hasNoContentBeforeChildList(
+                  getContentElement("task", element),
+                ),
+              };
             }
           }
           // Fall through to unordered list (if installed).
-          return false
+          return false;
         },
         contentElement: (element: HTMLElement) => {
-          let contentElement = getContentElement("task", element)
-          replaceParagraphsWithBreaks(contentElement)
+          let contentElement = getContentElement("task", element);
+          replaceParagraphsWithBreaks(contentElement);
           if (hasNoContentBeforeChildList(contentElement)) {
             // ProseMirror will ignore such an LI and only parse its child list.
             // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
             // Our plugins watch _isTempPropped and remove this temporary char.
-            contentElement.prepend(document.createTextNode("\u00A0"))
+            contentElement.prepend(document.createTextNode("\u00A0"));
           }
-          return contentElement
+          return contentElement;
         },
       },
-    ]
+    ];
   },
 
   renderHTML({ node }) {
@@ -139,7 +142,10 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           "label",
           // Empirically, top: 0 makes the checkbox look centered.
           // TODO: Find a general solution if this is only true for our specific line-height.
-          { style: "position: absolute; left: -20px; top: 0; user-select: none;" },
+          {
+            style:
+              "position: absolute; left: -20px; top: 0; user-select: none;",
+          },
           [
             "input",
             {
@@ -156,7 +162,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         // whose content elememt is the LI itself; see utils.ts#getContentElement.
         ["div", 0],
       ],
-    ]
+    ];
   },
 
   addNodeView() {
@@ -169,104 +175,105 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
       // Create HTML elements and assign attributes.
 
-      const ul = document.createElement("ul")
+      const ul = document.createElement("ul");
       ul.style.cssText = `margin-bottom: 0; margin-left: ${
         20 * node.attrs.indent
-      }px; list-style-type: none;`
+      }px; list-style-type: none;`;
       Object.entries(HTMLAttributes).forEach(([key, value]) => {
-        ul.setAttribute(key, value)
-      })
+        ul.setAttribute(key, value);
+      });
 
-      const li = document.createElement("li")
-      li.setAttribute("data-list-indent", node.attrs.indent)
-      li.setAttribute("data-checked", node.attrs.checked)
-      li.style.cssText = "position: relative;"
+      const li = document.createElement("li");
+      li.setAttribute("data-list-indent", node.attrs.indent);
+      li.setAttribute("data-checked", node.attrs.checked);
+      li.style.cssText = "position: relative;";
       // Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
       //   listItem.setAttribute(key, value)
       // })
 
-      const label = document.createElement("label")
-      label.contentEditable = "false"
-      label.style.cssText = "position: absolute; left: -20px; top: 0; user-select: none;"
+      const label = document.createElement("label");
+      label.contentEditable = "false";
+      label.style.cssText =
+        "position: absolute; left: -20px; top: 0; user-select: none;";
 
-      const input = document.createElement("input")
-      input.type = "checkbox"
-      input.checked = node.attrs.checked
-      input.style.cssText = "cursor: pointer;"
-      input.ariaLabel = checkboxAriaLabel(this.options, node)
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = node.attrs.checked;
+      input.style.cssText = "cursor: pointer;";
+      input.ariaLabel = checkboxAriaLabel(this.options, node);
 
-      const span = document.createElement("span")
+      const span = document.createElement("span");
 
-      const div = document.createElement("div")
+      const div = document.createElement("div");
 
       // Add checkbox event handlers that update the Tiptap state.
 
-      input.addEventListener("mousedown", (event) => event.preventDefault())
+      input.addEventListener("mousedown", (event) => event.preventDefault());
       input.addEventListener("change", (event) => {
         if (!editor.isEditable) {
-          input.checked = !input.checked
+          input.checked = !input.checked;
 
-          return
+          return;
         }
 
-        const { checked } = event.target as any
+        const { checked } = event.target as any;
 
         if (editor.isEditable && typeof getPos === "function") {
           editor
             .chain()
             .focus(undefined, { scrollIntoView: false })
             .command(({ tr }) => {
-              const position = getPos()
+              const position = getPos();
 
               if (typeof position !== "number") {
-                return false
+                return false;
               }
-              const currentNode = tr.doc.nodeAt(position)
+              const currentNode = tr.doc.nodeAt(position);
 
               tr.setNodeMarkup(position, undefined, {
                 ...currentNode?.attrs,
                 checked,
-              })
+              });
 
-              return true
+              return true;
             })
-            .run()
+            .run();
         }
-      })
+      });
 
       // Assemble HTML bottom-up.
 
-      label.append(input, span)
-      li.append(label, div)
-      ul.append(li)
+      label.append(input, span);
+      li.append(label, div);
+      ul.append(li);
 
       return {
         dom: ul,
         contentDOM: div,
         update: (updatedNode) => {
           if (updatedNode.type !== this.type) {
-            return false
+            return false;
           }
 
           // Re-do all assignments above that are functions of the node attrs.
           ul.style.cssText = `margin-bottom: 0; margin-left: ${
             20 * updatedNode.attrs.indent
-          }px; list-style-type: none;`
-          li.setAttribute("data-list-indent", updatedNode.attrs.indent)
-          li.setAttribute("data-checked", updatedNode.attrs.checked)
-          input.checked = updatedNode.attrs.checked
-          input.ariaLabel = checkboxAriaLabel(this.options, updatedNode)
+          }px; list-style-type: none;`;
+          li.setAttribute("data-list-indent", updatedNode.attrs.indent);
+          li.setAttribute("data-checked", updatedNode.attrs.checked);
+          input.checked = updatedNode.attrs.checked;
+          input.ariaLabel = checkboxAriaLabel(this.options, updatedNode);
 
-          return true
+          return true;
         },
-      }
-    }
+      };
+    };
   },
 
   addKeyboardShortcuts() {
     return {
       "Mod-Shift-9": () => this.editor.commands.toggleFlatListItem("task"),
-    }
+    };
   },
 
   addInputRules() {
@@ -277,13 +284,16 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         find: /^\s*(\[([( |x])?\])\s$/i,
         type: this.type,
       }),
-    ]
+    ];
   },
-})
+});
 
-function checkboxAriaLabel(options: FlatListTaskOptions, node: ProseMirrorNode): string {
+function checkboxAriaLabel(
+  options: FlatListTaskOptions,
+  node: ProseMirrorNode,
+): string {
   return (
     options.a11y?.checkboxLabel?.(node, !!node.attrs.checked) ||
     `Task item checkbox for ${node.textContent || "empty task item"}`
-  )
+  );
 }

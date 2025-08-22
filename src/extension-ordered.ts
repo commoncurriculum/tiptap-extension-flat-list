@@ -1,11 +1,11 @@
-import { Node } from "@tiptap/core"
-import { orderedNodeName } from "./internal/extension-names"
+import { Node } from "@tiptap/core";
+import { orderedNodeName } from "./internal/extension-names";
 import {
   computeIndent,
   flatListTypeInputRule,
   hasNoContentBeforeChildList,
   replaceParagraphsWithBreaks,
-} from "./internal/utils"
+} from "./internal/utils";
 
 export interface FlatListOrderedOptions {
   /**
@@ -13,7 +13,7 @@ export interface FlatListOrderedOptions {
    *
    * Default: always "decimal".
    */
-  getListStyleType: (indent: number) => string
+  getListStyleType: (indent: number) => string;
 }
 
 /**
@@ -35,7 +35,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
   addOptions() {
     return {
       getListStyleType: (_indent) => "decimal",
-    }
+    };
   },
 
   addAttributes() {
@@ -57,7 +57,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         default: false,
         rendered: false,
       },
-    }
+    };
   },
 
   parseHTML() {
@@ -72,28 +72,28 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
             return {
               indent: computeIndent(element),
               _isTempPropped: hasNoContentBeforeChildList(element),
-            }
+            };
           } else {
             // Fall through to unordered or task list (if installed).
-            return false
+            return false;
           }
         },
         contentElement: (element: HTMLElement) => {
-          replaceParagraphsWithBreaks(element)
+          replaceParagraphsWithBreaks(element);
           if (hasNoContentBeforeChildList(element)) {
             // ProseMirror will ignore such an LI and only parse its child list.
             // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
             // Our plugins watch _isTempPropped and remove this temporary char.
-            element.prepend(document.createTextNode("\u00A0"))
+            element.prepend(document.createTextNode("\u00A0"));
           }
-          return element
+          return element;
         },
       },
-    ]
+    ];
   },
 
   renderHTML({ node }) {
-    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0)
+    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0);
     return [
       "ol",
       {
@@ -113,13 +113,13 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         },
         0,
       ],
-    ]
+    ];
   },
 
   addKeyboardShortcuts() {
     return {
       "Mod-Shift-7": () => this.editor.commands.toggleFlatListItem("ordered"),
-    }
+    };
   },
 
   addInputRules() {
@@ -129,6 +129,6 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         find: /^\s?(\d+)\.\s$/,
         type: this.type,
       }),
-    ]
+    ];
   },
-})
+});

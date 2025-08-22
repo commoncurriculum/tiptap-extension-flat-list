@@ -1,10 +1,14 @@
-import { Node } from "@tiptap/pm/model"
-import { orderedNodeName, taskNodeName, unorderedNodeName } from "./internal/extension-names"
+import { Node } from "@tiptap/pm/model";
+import {
+  orderedNodeName,
+  taskNodeName,
+  unorderedNodeName,
+} from "./internal/extension-names";
 
-export type ListType = "ordered" | "unordered" | "task"
+export type ListType = "ordered" | "unordered" | "task";
 
 export function isFlatListNode(node: Node): boolean {
-  return getListType(node) !== null
+  return getListType(node) !== null;
 }
 
 /**
@@ -13,13 +17,13 @@ export function isFlatListNode(node: Node): boolean {
 export function getListType(node: Node): ListType | null {
   switch (node.type.name) {
     case orderedNodeName:
-      return "ordered"
+      return "ordered";
     case unorderedNodeName:
-      return "unordered"
+      return "unordered";
     case taskNodeName:
-      return "task"
+      return "task";
     default:
-      return null
+      return null;
   }
 }
 
@@ -29,10 +33,10 @@ export function getListType(node: Node): ListType | null {
 export function getFlatListNodeName(listType: ListType) {
   switch (listType) {
     case "ordered":
-      return orderedNodeName
+      return orderedNodeName;
     case "unordered":
-      return unorderedNodeName
+      return unorderedNodeName;
     case "task":
-      return taskNodeName
+      return taskNodeName;
   }
 }

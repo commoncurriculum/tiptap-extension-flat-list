@@ -1,11 +1,11 @@
-import { Node } from "@tiptap/core"
-import { unorderedNodeName } from "./internal/extension-names"
+import { Node } from "@tiptap/core";
+import { unorderedNodeName } from "./internal/extension-names";
 import {
   computeIndent,
   flatListTypeInputRule,
   hasNoContentBeforeChildList,
   replaceParagraphsWithBreaks,
-} from "./internal/utils"
+} from "./internal/utils";
 
 export interface FlatListUnorderedOptions {
   /**
@@ -13,7 +13,7 @@ export interface FlatListUnorderedOptions {
    *
    * Default: always "disc".
    */
-  getListStyleType: (indent: number) => string
+  getListStyleType: (indent: number) => string;
 }
 
 /**
@@ -35,7 +35,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
   addOptions() {
     return {
       getListStyleType: (_indent) => "disc",
-    }
+    };
   },
 
   addAttributes() {
@@ -53,7 +53,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
         default: false,
         rendered: false,
       },
-    }
+    };
   },
 
   parseHTML() {
@@ -68,24 +68,24 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
           return {
             indent: computeIndent(element),
             _isTempPropped: hasNoContentBeforeChildList(element),
-          }
+          };
         },
         contentElement: (element: HTMLElement) => {
-          replaceParagraphsWithBreaks(element)
+          replaceParagraphsWithBreaks(element);
           if (hasNoContentBeforeChildList(element)) {
             // ProseMirror will ignore such an LI and only parse its child list.
             // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
             // Our plugins watch _isTempPropped and remove this temporary char.
-            element.prepend(document.createTextNode("\u00A0"))
+            element.prepend(document.createTextNode("\u00A0"));
           }
-          return element
+          return element;
         },
       },
-    ]
+    ];
   },
 
   renderHTML({ node }) {
-    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0)
+    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0);
     return [
       "ul",
       {
@@ -104,13 +104,13 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
         },
         0,
       ],
-    ]
+    ];
   },
 
   addKeyboardShortcuts() {
     return {
       "Mod-Shift-8": () => this.editor.commands.toggleFlatListItem("unordered"),
-    }
+    };
   },
 
   addInputRules() {
@@ -120,6 +120,6 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
         find: /^\s?([*\-+])\s$/,
         type: this.type,
       }),
-    ]
+    ];
   },
-})
+});

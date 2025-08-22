@@ -1,6 +1,6 @@
-import { Slice } from "@tiptap/pm/model"
-import { Plugin } from "@tiptap/pm/state"
-import { isFlatListNode } from "../list-type"
+import { Slice } from "@tiptap/pm/model";
+import { Plugin } from "@tiptap/pm/state";
+import { isFlatListNode } from "../list-type";
 
 /**
  * ProseMirror plugin that massages pasted list items.
@@ -21,23 +21,23 @@ export function flatListPastePlugin() {
         // 1. Set indent levels.
 
         // Find the previous node in the document relative to the paste position.
-        const from = view.state.selection.$from
-        let contextIndent = 0
-        let lastIndent = -1
+        const from = view.state.selection.$from;
+        let contextIndent = 0;
+        let lastIndent = -1;
         if (from.depth > 0 && isFlatListNode(from.node(1))) {
-          contextIndent = from.node(1).attrs.indent
-          lastIndent = from.node(1).attrs.indent
+          contextIndent = from.node(1).attrs.indent;
+          lastIndent = from.node(1).attrs.indent;
         }
 
         // Loop over top-level nodes in the slice, setting the indent on list items.
         // delta is the amount to add to the next node's indent level, or null if reset.
-        let delta: number | null = null
+        let delta: number | null = null;
         for (let i = 0; i < slice.content.childCount; i++) {
-          const child = slice.content.child(i)
+          const child = slice.content.child(i);
           if (isFlatListNode(child)) {
             if (delta === null) {
               // Start a new list, with this node at indent = contextIndent.
-              delta = contextIndent - child.attrs.indent
+              delta = contextIndent - child.attrs.indent;
             }
 
             if (i === 0) {
@@ -45,24 +45,30 @@ export function flatListPastePlugin() {
               // so child.attrs.indent will be discarded and we should leave lastIndent alone.
               // Exception: if you paste at the very beginning of a node, then that node's type
               // is overwritten by the first pasted node (= child), so we should proceed.
-              if (!(from.depth > 0 && from.pos == from.posAtIndex(from.index(0), 0) + 1)) continue
+              if (
+                !(
+                  from.depth > 0 &&
+                  from.pos == from.posAtIndex(from.index(0), 0) + 1
+                )
+              )
+                continue;
             }
 
-            let newIndent = child.attrs.indent + delta
+            let newIndent = child.attrs.indent + delta;
 
             // Clamp newIndent, also adjusting following indents by the same amount.
             if (newIndent < 0) {
-              delta += 0 - newIndent
-              newIndent = 0
+              delta += 0 - newIndent;
+              newIndent = 0;
             } else if (newIndent > lastIndent + 1) {
-              delta += lastIndent + 1 - newIndent
-              newIndent = lastIndent + 1
+              delta += lastIndent + 1 - newIndent;
+              newIndent = lastIndent + 1;
             }
-            lastIndent = newIndent
+            lastIndent = newIndent;
 
             // Update child in the slice.
             // @ts-expect-error Mutating directly for convenience.
-            child.attrs.indent = newIndent
+            child.attrs.indent = newIndent;
             // slice = new Slice(
             //   slice.content.replaceChild(
             //     i,
@@ -73,28 +79,32 @@ export function flatListPastePlugin() {
             // )
           } else {
             // Reset list.
-            contextIndent = 0
-            delta = null
+            contextIndent = 0;
+            delta = null;
           }
         }
 
         // 2. Process _isTempPropped indicator for the first node.
-        const firstChild = slice.content.firstChild
-        if (firstChild && isFlatListNode(firstChild) && firstChild.attrs._isTempPropped) {
+        const firstChild = slice.content.firstChild;
+        if (
+          firstChild &&
+          isFlatListNode(firstChild) &&
+          firstChild.attrs._isTempPropped
+        ) {
           // Reset indicator and delete propping char.
           const newFirstChild = firstChild.type.create(
             { ...firstChild.attrs, _isTempPropped: undefined },
-            firstChild.content.cut(1)
-          )
+            firstChild.content.cut(1),
+          );
           slice = new Slice(
             slice.content.replaceChild(0, newFirstChild),
             slice.openStart,
-            slice.openEnd
-          )
+            slice.openEnd,
+          );
         }
 
-        return slice
+        return slice;
       },
     },
-  })
+  });
 }

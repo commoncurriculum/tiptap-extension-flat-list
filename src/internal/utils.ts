@@ -1,7 +1,7 @@
-import { InputRule, InputRuleFinder } from "@tiptap/core"
-import { NodeType } from "@tiptap/pm/model"
-import { isFlatListNode, ListType } from "../list-type"
-import { taskNodeName } from "./extension-names"
+import { InputRule, InputRuleFinder } from "@tiptap/core";
+import { NodeType } from "@tiptap/pm/model";
+import { isFlatListNode, ListType } from "../list-type";
+import { taskNodeName } from "./extension-names";
 
 /**
  * Computes the indent level of an `<li>`.
@@ -9,28 +9,34 @@ import { taskNodeName } from "./extension-names"
  * - Else (e.g. pasted content) check the nesting level.
  */
 export function computeIndent(element: HTMLElement) {
-  const storedIndent = parseIntegerAttr(element.getAttribute("data-list-indent"))
-  if (storedIndent !== undefined) return storedIndent
+  const storedIndent = parseIntegerAttr(
+    element.getAttribute("data-list-indent"),
+  );
+  if (storedIndent !== undefined) return storedIndent;
 
   // Count the number of ancestor ol/ul elements.
-  let count = -1
-  for (let ancestor = element.parentElement; ancestor !== null; ancestor = ancestor.parentElement) {
-    if (ancestor.tagName === "UL" || ancestor.tagName === "OL") count++
+  let count = -1;
+  for (
+    let ancestor = element.parentElement;
+    ancestor !== null;
+    ancestor = ancestor.parentElement
+  ) {
+    if (ancestor.tagName === "UL" || ancestor.tagName === "OL") count++;
   }
-  return Math.max(count, 0)
+  return Math.max(count, 0);
 }
 
 export function computeChecked(element: HTMLElement) {
-  const dataChecked = element.getAttribute("data-checked")
+  const dataChecked = element.getAttribute("data-checked");
 
-  return dataChecked === "" || dataChecked === "true"
+  return dataChecked === "" || dataChecked === "true";
 }
 
 export function parseIntegerAttr(attr: string | null): number | undefined {
-  if (attr === null) return undefined
-  const indent = Number.parseInt(attr)
-  if (!Number.isInteger(indent)) return undefined
-  return indent
+  if (attr === null) return undefined;
+  const indent = Number.parseInt(attr);
+  if (!Number.isInteger(indent)) return undefined;
+  return indent;
 }
 
 /**
@@ -39,14 +45,17 @@ export function parseIntegerAttr(attr: string | null): number | undefined {
  * - For task list items that are shaped like a renderHTML output, the div that is the last child of the LI;
  * else the LI itself. (Latter happens when it's copied content that got simplified by joinListElements.)
  */
-export function getContentElement(listType: ListType, li: HTMLElement): HTMLElement {
+export function getContentElement(
+  listType: ListType,
+  li: HTMLElement,
+): HTMLElement {
   if (
     listType === "task" &&
     li.firstElementChild instanceof HTMLLabelElement &&
     li.lastElementChild instanceof HTMLElement
   ) {
-    return li.lastElementChild
-  } else return li
+    return li.lastElementChild;
+  } else return li;
 }
 
 /**
@@ -54,28 +63,31 @@ export function getContentElement(listType: ListType, li: HTMLElement): HTMLElem
  * These need special handling in parseHTML to prevent ProseMirror from ignoring the LI
  * and just parsing its child list.
  */
-export function hasNoContentBeforeChildList(contentElement: HTMLElement): boolean {
+export function hasNoContentBeforeChildList(
+  contentElement: HTMLElement,
+): boolean {
   // If an li contains a nested list but no (non-collapsible) leading content,
   // ProseMirror will parse the whole thing as one flat list node.
   // Prevent this by propping it up with a leading `&nbsp;`, later removed by
   // flatListPostprocessorPlugin or pastePlugin.
-  let childToCheck = contentElement.firstChild
+  let childToCheck = contentElement.firstChild;
   if (
     // eslint-disable-next-line no-control-regex
-    (childToCheck instanceof Text && /^[ \t\r\n\u000c]*$/.test(childToCheck.wholeText)) ||
+    (childToCheck instanceof Text &&
+      /^[ \t\r\n\u000c]*$/.test(childToCheck.wholeText)) ||
     childToCheck instanceof HTMLBRElement
   ) {
     // The first child is collapsible whitespace; skip.
     // The regex is from https://github.com/ProseMirror/prosemirror-model/blob/20d26c9843d6a69a1d417d937c401537ee0b2342/src/from_dom.ts#L443.
     // We also count BRs as collapsible in case they come from extension-external-trailing-break
     // (hence will be ignored during parsing).
-    childToCheck = contentElement.childNodes.item(1)
+    childToCheck = contentElement.childNodes.item(1);
   }
 
   return (
     childToCheck instanceof HTMLElement &&
     (childToCheck.tagName === "UL" || childToCheck.tagName === "OL")
-  )
+  );
 }
 
 /**
@@ -91,43 +103,46 @@ export function hasNoContentBeforeChildList(contentElement: HTMLElement): boolea
  * it's moved out of the list-item for failing to conform to the schema.
  */
 export function replaceParagraphsWithBreaks(element: HTMLElement): void {
-  let hasPChild = false
+  let hasPChild = false;
   for (const child of element.children) {
     if (child.tagName === "P") {
-      hasPChild = true
-      break
+      hasPChild = true;
+      break;
     }
   }
-  if (!hasPChild) return
+  if (!hasPChild) return;
 
   // Replace each paragraph with its content, followed by a BR if needed to show a break.
-  const originalChildNodes = Array.from(element.childNodes)
+  const originalChildNodes = Array.from(element.childNodes);
   for (let i = 0; i < originalChildNodes.length; i++) {
-    const child = originalChildNodes[i]
-    if (!(child instanceof HTMLElement && child.tagName === "P")) continue
+    const child = originalChildNodes[i];
+    if (!(child instanceof HTMLElement && child.tagName === "P")) continue;
 
     // Move the paragraph's content to the parent
-    const grandchildren = Array.from(child.childNodes)
+    const grandchildren = Array.from(child.childNodes);
     for (const grandchild of grandchildren) {
-      element.insertBefore(grandchild, child)
+      element.insertBefore(grandchild, child);
     }
     // Add a BR after the paragraph content if needed to look right
     if (i < originalChildNodes.length - 1) {
-      const nextChild = originalChildNodes[i + 1]
-      if (nextChild instanceof HTMLElement && ["OL", "UL", "LI"].includes(nextChild.tagName)) {
+      const nextChild = originalChildNodes[i + 1];
+      if (
+        nextChild instanceof HTMLElement &&
+        ["OL", "UL", "LI"].includes(nextChild.tagName)
+      ) {
         // nextChild will be parsed as a separate flat-list-item by ProseMirror.
         // Although adding a BR looks right in plain HTML, ProseMirror will interpret it as
         // an extra blank line in the current flat-list-item, which we don't want.
       } else {
-        const br = element.ownerDocument.createElement("br")
-        element.insertBefore(br, child)
+        const br = element.ownerDocument.createElement("br");
+        element.insertBefore(br, child);
       }
     }
     // Remove the now-empty paragraph
-    element.removeChild(child)
+    element.removeChild(child);
   }
 
-  return
+  return;
 }
 
 /**
@@ -138,36 +153,43 @@ export function replaceParagraphsWithBreaks(element: HTMLElement): void {
  * 2. We don't match if the list node already has the intended type.
  * That way, you can type "1." at the start of an ordered list node without it disappearing.
  */
-export function flatListTypeInputRule(config: { find: InputRuleFinder; type: NodeType }) {
+export function flatListTypeInputRule(config: {
+  find: InputRuleFinder;
+  type: NodeType;
+}) {
   return new InputRule({
     find: config.find,
     handler: ({ state, range, match }) => {
-      const $start = state.doc.resolve(range.from)
-      if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), config.type)) {
-        return null
+      const $start = state.doc.resolve(range.from);
+      if (
+        !$start
+          .node(-1)
+          .canReplaceWith($start.index(-1), $start.indexAfter(-1), config.type)
+      ) {
+        return null;
       }
 
-      let indent = 0
-      const curNode = $start.node($start.depth)
+      let indent = 0;
+      const curNode = $start.node($start.depth);
       if (isFlatListNode(curNode)) {
         // Already a list node.
         if (curNode.type === config.type) {
           // Already the intended type. Don't disappear the input.
-          return null
+          return null;
         }
         // Preserve indent.
-        indent = curNode.attrs["indent"] ?? 0
+        indent = curNode.attrs["indent"] ?? 0;
       }
 
-      let checked: boolean | undefined = undefined
+      let checked: boolean | undefined = undefined;
       if (config.type.name === taskNodeName) {
-        checked = match[match.length - 1]?.toLowerCase() === "x"
+        checked = match[match.length - 1]?.toLowerCase() === "x";
       }
 
       state.tr
         .delete(range.from, range.to)
-        .setBlockType(range.from, range.from, config.type, { indent, checked })
-      return
+        .setBlockType(range.from, range.from, config.type, { indent, checked });
+      return;
     },
-  })
+  });
 }

@@ -1,7 +1,14 @@
-import { Editor } from "@tiptap/core"
-import { DOMOutputSpec, DOMSerializer, Fragment, Mark, Node, Schema } from "@tiptap/pm/model"
-import { getContentElement, parseIntegerAttr } from "./internal/utils"
-import { ListType } from "./list-type"
+import { Editor } from "@tiptap/core";
+import {
+  DOMOutputSpec,
+  DOMSerializer,
+  Fragment,
+  Mark,
+  Node,
+  Schema,
+} from "@tiptap/pm/model";
+import { getContentElement, parseIntegerAttr } from "./internal/utils";
+import { ListType } from "./list-type";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list/blob/master/packages/core/src/utils/list-serializer.ts
 
@@ -22,44 +29,44 @@ export class JoinListDOMSerializer extends DOMSerializer {
     The node serialization functions.
     */
     nodes: {
-      [node: string]: (node: Node) => DOMOutputSpec
+      [node: string]: (node: Node) => DOMOutputSpec;
     },
     /**
     The mark serialization functions.
     */
     marks: {
-      [mark: string]: (mark: Mark, inline: boolean) => DOMOutputSpec
+      [mark: string]: (mark: Mark, inline: boolean) => DOMOutputSpec;
     },
-    readonly usedFor: "getHTML" | "clipboard"
+    readonly usedFor: "getHTML" | "clipboard",
   ) {
-    super(nodes, marks)
+    super(nodes, marks);
   }
 
   private static readonly cache = new WeakMap<
     DOMSerializer,
     { getHTML?: JoinListDOMSerializer; clipboard?: JoinListDOMSerializer }
-  >()
+  >();
 
   /**
    * Appends our behavior to an arbitrary DOMSerializer.
    */
   static from(
     domSerializer: DOMSerializer,
-    usedFor: "getHTML" | "clipboard" = "getHTML"
+    usedFor: "getHTML" | "clipboard" = "getHTML",
   ): JoinListDOMSerializer {
-    let cachedMap = this.cache.get(domSerializer)
+    let cachedMap = this.cache.get(domSerializer);
     if (!cachedMap) {
-      cachedMap = {}
-      this.cache.set(domSerializer, cachedMap)
+      cachedMap = {};
+      this.cache.set(domSerializer, cachedMap);
     }
     if (!cachedMap[usedFor]) {
       cachedMap[usedFor] = new JoinListDOMSerializer(
         domSerializer.nodes,
         domSerializer.marks,
-        usedFor
-      )
+        usedFor,
+      );
     }
-    return cachedMap[usedFor]
+    return cachedMap[usedFor];
   }
 
   /**
@@ -69,9 +76,9 @@ export class JoinListDOMSerializer extends DOMSerializer {
    */
   static fromSchema(
     schema: Schema,
-    usedFor: "getHTML" | "clipboard" = "getHTML"
+    usedFor: "getHTML" | "clipboard" = "getHTML",
   ): JoinListDOMSerializer {
-    return this.from(DOMSerializer.fromSchema(schema), usedFor)
+    return this.from(DOMSerializer.fromSchema(schema), usedFor);
   }
 
   /**
@@ -81,37 +88,41 @@ export class JoinListDOMSerializer extends DOMSerializer {
     editor.setOptions({
       editorProps: {
         clipboardSerializer: JoinListDOMSerializer.from(
-          editor.view.props.clipboardSerializer ?? DOMSerializer.fromSchema(editor.schema),
-          "clipboard"
+          editor.view.props.clipboardSerializer ??
+            DOMSerializer.fromSchema(editor.schema),
+          "clipboard",
         ),
       },
-    })
+    });
   }
 
   static getHTML(editor: Editor) {
-    return this.getDocHTML(editor.state.doc)
+    return this.getDocHTML(editor.state.doc);
   }
 
   static getDocHTML(doc: Node) {
     // Modified from Tiptap's getHTMLFromFragment.
-    const serializer = JoinListDOMSerializer.fromSchema(doc.type.schema, "getHTML")
-    const documentFragment = serializer.serializeFragment(doc.content)
+    const serializer = JoinListDOMSerializer.fromSchema(
+      doc.type.schema,
+      "getHTML",
+    );
+    const documentFragment = serializer.serializeFragment(doc.content);
 
-    const temporaryDocument = document.implementation.createHTMLDocument()
-    const container = temporaryDocument.createElement("div")
+    const temporaryDocument = document.implementation.createHTMLDocument();
+    const container = temporaryDocument.createElement("div");
 
-    container.appendChild(documentFragment)
+    container.appendChild(documentFragment);
 
-    return container.innerHTML
+    return container.innerHTML;
   }
 
   serializeFragment(
     fragment: Fragment,
     options?: { document?: Document },
-    target?: HTMLElement | DocumentFragment
+    target?: HTMLElement | DocumentFragment,
   ): HTMLElement | DocumentFragment {
-    const dom = super.serializeFragment(fragment, options, target)
-    return joinListElements(dom, this.usedFor)
+    const dom = super.serializeFragment(fragment, options, target);
+    return joinListElements(dom, this.usedFor);
   }
 }
 
@@ -128,50 +139,51 @@ export class JoinListDOMSerializer extends DOMSerializer {
  */
 function joinListElements<T extends Element | DocumentFragment>(
   doc: T,
-  usedFor: "getHTML" | "clipboard"
+  usedFor: "getHTML" | "clipboard",
 ): T {
   // Store the last UL/OL elements for each indent level.
-  let lastLists: Element[] = []
+  let lastLists: Element[] = [];
 
   for (let i = 0; i < doc.children.length; i++) {
-    const block = doc.children.item(i) as HTMLElement | null
-    if (!block) continue
+    const block = doc.children.item(i) as HTMLElement | null;
+    if (!block) continue;
 
-    const listType = getElementListType(block)
+    const listType = getElementListType(block);
     if (listType !== null) {
-      const liChild = block.firstChild as HTMLLIElement
-      const indent = parseIntegerAttr(liChild.getAttribute("data-list-indent")) ?? 0
+      const liChild = block.firstChild as HTMLLIElement;
+      const indent =
+        parseIntegerAttr(liChild.getAttribute("data-list-indent")) ?? 0;
 
       if (usedFor === "getHTML") {
         // Remove this to clean up the saved HTML.
         // We leave it in when copying so that pasting back into Tiptap remembers backwards
         // indents that we can't represent in plain HTML (e.g.: 1, 0, 1).
-        liChild.removeAttribute("data-list-indent")
+        liChild.removeAttribute("data-list-indent");
       }
       if (usedFor === "clipboard") {
         // Simplify the LI content: make the LI its own content element, removing the task checkbox.
         // This avoids confusing other programs, at the cost of converting tasks into bullets.
         // (For pasting into ourselves, we'll remember that it's a task using data attributes.)
-        const contentElement = getContentElement(listType, liChild)
+        const contentElement = getContentElement(listType, liChild);
         if (contentElement !== liChild) {
-          const children = Array.from(contentElement.childNodes)
-          liChild.replaceChildren(...children)
+          const children = Array.from(contentElement.childNodes);
+          liChild.replaceChildren(...children);
         }
 
         // Let the target program decide what LI formatting to use.
-        liChild.removeAttribute("style")
+        liChild.removeAttribute("style");
       }
 
-      const lastList = lastLists[indent]
+      const lastList = lastLists[indent];
       if (lastList === undefined || getElementListType(lastList) !== listType) {
         // child starts a new list.
 
         // 1. Remove extraneous attrs/styles.
-        block.removeAttribute("start")
-        block.style.removeProperty("margin-left")
+        block.removeAttribute("start");
+        block.style.removeProperty("margin-left");
         if (usedFor === "clipboard") {
           // Let the target program decide what OL/UL formatting to use.
-          block.removeAttribute("style")
+          block.removeAttribute("style");
         }
 
         // 2. Nest under previous indent level's list.
@@ -187,41 +199,41 @@ function joinListElements<T extends Element | DocumentFragment>(
           // where `addExternalTrailingBreaks` is from the ExternalTrailingBreaks extension; this will
           // add a BR to the LI before joinListElements is called, so that wrapperLi always has content.
 
-          const parentList = lastLists[indent - 1]
-          const parentListType = getElementListType(parentList)!
-          const parentLi = parentList.lastChild as HTMLElement
-          getContentElement(parentListType, parentLi).append(block)
-          i--
+          const parentList = lastLists[indent - 1];
+          const parentListType = getElementListType(parentList)!;
+          const parentLi = parentList.lastChild as HTMLElement;
+          getContentElement(parentListType, parentLi).append(block);
+          i--;
         }
 
         // 3. Reset the lastLists for it and higher indent levels.
-        lastLists[indent] = block
-        lastLists.length = indent + 1
+        lastLists[indent] = block;
+        lastLists.length = indent + 1;
       } else {
         // Append child's li to the existing list.
-        lastList.append(liChild)
-        block.remove()
-        i--
+        lastList.append(liChild);
+        block.remove();
+        i--;
 
         // Reset the lastLists for higher indent levels.
-        lastLists.length = indent + 1
+        lastLists.length = indent + 1;
       }
     } else {
       // Not a list block. Reset all lastLists.
-      lastLists = []
+      lastLists = [];
     }
   }
-  return doc
+  return doc;
 }
 
 /**
  * Given a candidate flat-list wrapper OL/UL, return its ListType, or null if it is not one.
  */
 function getElementListType(element: Element): ListType | null {
-  if (element.tagName === "OL") return "ordered"
+  if (element.tagName === "OL") return "ordered";
   else if (element.tagName === "UL") {
-    const attrTaskList = element.getAttribute("data-task-list")
-    if (attrTaskList === "" || attrTaskList === "true") return "task"
-    else return "unordered"
-  } else return null
+    const attrTaskList = element.getAttribute("data-task-list");
+    if (attrTaskList === "" || attrTaskList === "true") return "task";
+    else return "unordered";
+  } else return null;
 }

@@ -19,7 +19,6 @@ Benefits of flat list items:
 - Reason about list items like any other top-level block (paragraphs, headings, etc.).
 - Simpler commands---no need to lift/sink blocks or check for wrapper OL/UL blocks.
 - Easier to make sense of changes in a collaborative setting.
-
   - In particular, it's straightforward to model a flat sequence of blocks (with inline content) as a [CRDT](https://crdt.tech/): take a CRDT for non-block text (e.g. [Peritext](https://www.inkandswitch.com/peritext/)) and add special "new block" characters that indicate where the next block starts and its type. This CRDT automatically handles block splitting and merging in the obvious way.
 
 ## Docs
