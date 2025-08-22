@@ -32,8 +32,15 @@
     "access": "public"
   },
   "sideEffects": false,
+  "dependencies": {},
+  "peerDependencies": {
+    "@tiptap/core": "2.x || 3.x",
+    "@tiptap/pm": "2.x || 3.x"
+  },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@tiptap/core": "3.0.9",
+    "@tiptap/pm": "3.0.9",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
