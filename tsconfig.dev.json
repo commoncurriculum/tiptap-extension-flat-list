@@ -4,5 +4,5 @@
     "rootDir": "."
   },
   // All folders to lint
-  "include": ["src"]
+  "include": ["src", "demo"]
 }
