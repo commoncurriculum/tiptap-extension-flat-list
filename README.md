@@ -48,3 +48,4 @@ Parsing normal HTML lists should work out-of-the-box. In particular, saving `htm
 - Test, lint, etc. with `npm run test`. Use `npm run coverage` for code coverage (opens in browser).
 - Preview typedoc with `npm run docs`. (Open `docs/index.html` in a browser.)
 - Publish with `npm publish`.
+- Run the demo (in demo/) with `npm start`.
