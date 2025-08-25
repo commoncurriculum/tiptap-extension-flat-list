@@ -46,6 +46,15 @@ Parsing normal HTML lists should work out-of-the-box. In particular, saving `htm
 See [demo/](./demo/).
 
 ```ts
+import {
+  FlatListCore,
+  FlatListOrdered,
+  FlatListTask,
+  FlatListUnordered,
+  JoinListDOMSerializer,
+} from "tiptap-extension-flat-list";
+// ...
+
 const editor = new Editor({
   element: document.querySelector(".element"),
   extensions: [
@@ -63,7 +72,7 @@ const editor = new Editor({
 
 JoinListDOMSerializer.setClipboardSerializer(editor);
 
-// To get HTML that uses normal HTML lists, instead of editor.getHTML(), call:
+// To export HTML that uses normal HTML lists, instead of editor.getHTML(), call:
 console.log(JoinListDOMSerializer.getHTML(editor));
 ```
 
