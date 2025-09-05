@@ -23,6 +23,12 @@ The library code is based on [prosemirror-flat-list](https://github.com/ocavue/p
 
 ## Docs
 
+### Install
+
+```bash
+npm i tiptap-extension-flat-list
+```
+
 ### Tiptap Extensions
 
 - `FlatListCore` (required): Core functionality required by the other extensions.
