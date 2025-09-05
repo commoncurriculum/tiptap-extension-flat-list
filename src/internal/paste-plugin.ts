@@ -1,5 +1,5 @@
 import { Slice } from "@tiptap/pm/model";
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 
 /**
@@ -16,6 +16,7 @@ import { isFlatListNode } from "../list-type";
  */
 export function flatListPastePlugin() {
   return new Plugin({
+    key: new PluginKey("flatListPastePlugin"),
     props: {
       transformPasted(slice, view) {
         // 1. Set indent levels.

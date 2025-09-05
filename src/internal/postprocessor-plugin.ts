@@ -1,4 +1,4 @@
-import { Plugin } from "@tiptap/pm/state";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 import { orderedNodeName } from "./extension-names";
 
@@ -13,6 +13,7 @@ import { orderedNodeName } from "./extension-names";
  */
 export function flatListPostprocessorPlugin() {
   return new Plugin({
+    key: new PluginKey("flatListPostprocessorPlugin"),
     appendTransaction(_transactions, _oldState, newState) {
       let tr = newState.tr;
       let updated = false;
