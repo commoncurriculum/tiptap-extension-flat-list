@@ -144,4 +144,3 @@ editor.commands.dedentFlatListItem(canConvert?: boolean)
 - Build with `npm run build`.
 - Lint and check format with `npm run test`.
 - Preview typedoc with `npm run docs`. (Open `docs/index.html` in a browser.)
-- Publish with `npm publish`.
