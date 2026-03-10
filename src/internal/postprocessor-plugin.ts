@@ -1,3 +1,4 @@
+import { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 import { orderedNodeName } from "./extension-names";
@@ -18,20 +19,26 @@ export function flatListPostprocessorPlugin() {
       let tr = newState.tr;
       let updated = false;
 
-      // Store the last counter values for each indent level.
-      let lastCounters: number[] = [];
+      // Store the last counter values for each parent node and indent level.
+      const lastCounters = new Map<PMNode | null, number[]>();
       // Positions to delete according to _isTempPropped.
       const toDelete: number[] = [];
 
       // Iterate over all children of doc.
-      newState.doc.descendants((node, pos) => {
+      newState.doc.descendants((node, pos, parent) => {
         if (isFlatListNode(node)) {
+          let parentLastCounters = lastCounters.get(parent);
+          if (!parentLastCounters) {
+            parentLastCounters = [];
+            lastCounters.set(parent, parentLastCounters);
+          }
+
           let nodeAttrs = node.attrs;
 
           // Indents.
           const indent = nodeAttrs.indent as number;
           if (node.type.name === orderedNodeName) {
-            const counterValue = (lastCounters[indent] ?? 0) + 1;
+            const counterValue = (parentLastCounters[indent] ?? 0) + 1;
 
             // If the node’s current counter attribute doesn't match the computed value, update it.
             if (nodeAttrs.counter !== counterValue) {
@@ -41,12 +48,12 @@ export function flatListPostprocessorPlugin() {
             }
 
             // Update the counter value for this indent level.
-            lastCounters[indent] = counterValue;
+            parentLastCounters[indent] = counterValue;
             // Reset the counter value for higher indent levels.
-            lastCounters.length = indent + 1;
+            parentLastCounters.length = indent + 1;
           } else {
             // Non-ordered list block. Reset the counter value for this and higher indent levels.
-            lastCounters.length = indent;
+            parentLastCounters.length = indent;
           }
 
           // Temp prop handling: record propping char for deletion and reset _isTempPropped.
@@ -58,10 +65,10 @@ export function flatListPostprocessorPlugin() {
           }
         } else {
           // Not a list block. Reset all counters.
-          lastCounters = [];
+          lastCounters.delete(parent);
         }
 
-        return false;
+        return !node.inlineContent;
       });
 
       if (toDelete.length > 0) {
