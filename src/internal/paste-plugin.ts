@@ -2,7 +2,6 @@ import { Slice } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 
-// TODO: Failing to preserve second node's relative indent in my tests.
 /**
  * ProseMirror plugin that massages pasted list items.
  *
@@ -26,9 +25,9 @@ export function flatListPastePlugin() {
         const from = view.state.selection.$from;
         let contextIndent = 0;
         let lastIndent = -1;
-        if (from.depth > 0 && isFlatListNode(from.node(1))) {
-          contextIndent = from.node(1).attrs.indent;
-          lastIndent = from.node(1).attrs.indent;
+        if (isFlatListNode(from.parent)) {
+          contextIndent = from.parent.attrs.indent;
+          lastIndent = from.parent.attrs.indent;
         }
 
         // Loop over top-level nodes in the slice, setting the indent on list items.
@@ -43,17 +42,11 @@ export function flatListPastePlugin() {
             }
 
             if (i === 0) {
-              // The first node usally inherits the type and indent of the node containing the paste target,
+              // The first node usually inherits the type and indent of the node containing the paste target,
               // so child.attrs.indent will be discarded and we should leave lastIndent alone.
-              // Exception: if you paste at the very beginning of a node, then that node's type
+              // Exception: if you paste at the very beginning of a non-root node, then that node's type
               // is overwritten by the first pasted node (= child), so we should proceed.
-              if (
-                !(
-                  from.depth > 0 &&
-                  from.pos == from.posAtIndex(from.index(0), 0) + 1
-                )
-              )
-                continue;
+              if (!(from.depth > 0 && from.parentOffset === 0)) continue;
             }
 
             let newIndent = child.attrs.indent + delta;
