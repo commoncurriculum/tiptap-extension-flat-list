@@ -6,8 +6,6 @@ Unlike HTML or Tiptap's list extensions, list items are not wrapped in list bloc
 
 The library is compatible with normal HTML lists---both when parsing/serializing state and when interacting with the clipboard---**if** you use our [Helper Functions](#helper-functions). In the editor itself, each flat list item is rendered as a list (OL/UL) containing a single LI, with some rendering tricks to make these look like normal joined and nested lists.
 
-> **Warning:** For now, some parts of the code assume that flat list items are always children of the top-level doc node.
-
 **Why flat lists?**
 
 Our flat list data model is inspired by the [Quill](https://quilljs.com/) rich-text editor. Quill models text as a plain text string plus inline formatting; blocks are represented by newline characters, with each block's type given by [formatting on the newline](https://quilljs.com/docs/delta#line-formatting). While Quill is less powerful than ProseMirror, its simple data model is easy to use compared to ProseMirror's tree of nodes.
