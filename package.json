@@ -59,6 +59,7 @@
     "start": "vite serve demo",
     "prepack": "npm run clean && npm run build && npm run test",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.commonjs.json",
+    "watch": "tsc -p tsconfig.json -w & tsc -p tsconfig.commonjs.json -w",
     "test": "npm-run-all test:*",
     "test:lint": "eslint --ext .ts,.js .",
     "test:format": "prettier --check .",

@@ -141,6 +141,6 @@ editor.commands.dedentFlatListItem(canConvert?: boolean)
 
 - Install dependencies with `npm install`.
 - Run the demo (in demo/) with `npm start`.
-- Build with `npm run build`.
+- Build with `npm run build`, or build in watch mode with `npm run watch`.
 - Lint and check format with `npm run test`.
 - Preview typedoc with `npm run docs`. (Open `docs/index.html` in a browser.)
