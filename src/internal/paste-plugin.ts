@@ -41,14 +41,6 @@ export function flatListPastePlugin() {
               delta = contextIndent - child.attrs.indent;
             }
 
-            if (i === 0) {
-              // The first node usually inherits the type and indent of the node containing the paste target,
-              // so child.attrs.indent will be discarded and we should leave lastIndent alone.
-              // Exception: if you paste at the very beginning of a non-root node, then that node's type
-              // is overwritten by the first pasted node (= child), so we should proceed.
-              if (!($from.depth > 0 && $from.parentOffset === 0)) continue;
-            }
-
             let newIndent = child.attrs.indent + delta;
 
             // Clamp newIndent, also adjusting following indents by the same amount.
