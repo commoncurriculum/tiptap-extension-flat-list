@@ -2,6 +2,7 @@ import { Slice } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 
+// TODO: Failing to preserve second node's relative indent in my tests.
 /**
  * ProseMirror plugin that massages pasted list items.
  *
@@ -103,6 +104,10 @@ export function flatListPastePlugin() {
             slice.openEnd,
           );
         }
+
+        // We don't need to recurse into the slice because this special paste behavior
+        // only applies to the outermost flat list. Nested flat lists (e.g. inside a
+        // card node) will retain the indents they are pasted with.
 
         return slice;
       },
