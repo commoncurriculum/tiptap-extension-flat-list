@@ -22,12 +22,12 @@ export function flatListPastePlugin() {
         // 1. Set indent levels.
 
         // Find the previous node in the document relative to the paste position.
-        const from = view.state.selection.$from;
+        const $from = view.state.selection.$from;
         let contextIndent = 0;
         let lastIndent = -1;
-        if (isFlatListNode(from.parent)) {
-          contextIndent = from.parent.attrs.indent;
-          lastIndent = from.parent.attrs.indent;
+        if (isFlatListNode($from.parent)) {
+          contextIndent = $from.parent.attrs.indent;
+          lastIndent = $from.parent.attrs.indent;
         }
 
         // Loop over top-level nodes in the slice, setting the indent on list items.
@@ -46,7 +46,7 @@ export function flatListPastePlugin() {
               // so child.attrs.indent will be discarded and we should leave lastIndent alone.
               // Exception: if you paste at the very beginning of a non-root node, then that node's type
               // is overwritten by the first pasted node (= child), so we should proceed.
-              if (!(from.depth > 0 && from.parentOffset === 0)) continue;
+              if (!($from.depth > 0 && $from.parentOffset === 0)) continue;
             }
 
             let newIndent = child.attrs.indent + delta;
