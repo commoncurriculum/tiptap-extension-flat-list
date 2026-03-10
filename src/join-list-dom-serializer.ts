@@ -136,7 +136,7 @@ export class JoinListDOMSerializer extends DOMSerializer {
  *
  * This function also cleans up the HTML a bit, especially when copying, to avoid confusing other programs.
  *
- * Note: This function does **not** recurse into dom. This is okay because serlializedFragment is
+ * Note: This function does **not** recurse into dom. This is okay because serlializeFragment is
  * itself called recursively (w.r.t. the ProseMirror doc).
  *
  * @param usedFor Hint used to tune behavior for converting an entire editor state ("getHTML")

@@ -24,7 +24,6 @@ export function flatListPostprocessorPlugin() {
       // Positions to delete according to _isTempPropped.
       const toDelete: number[] = [];
 
-      // Iterate over all children of doc.
       newState.doc.descendants((node, pos, parent) => {
         if (isFlatListNode(node)) {
           let parentLastCounters = lastCounters.get(parent);
@@ -68,6 +67,7 @@ export function flatListPostprocessorPlugin() {
           lastCounters.delete(parent);
         }
 
+        // Recurse into nodes that could have flat-list-item descendants.
         return !node.inlineContent;
       });
 
