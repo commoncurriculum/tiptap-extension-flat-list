@@ -122,7 +122,8 @@ export class JoinListDOMSerializer extends DOMSerializer {
     target?: HTMLElement | DocumentFragment,
   ): HTMLElement | DocumentFragment {
     const dom = super.serializeFragment(fragment, options, target);
-    return joinListElements(dom, this.usedFor);
+    joinListElements(dom, this.usedFor);
+    return dom;
   }
 }
 
@@ -130,22 +131,26 @@ export class JoinListDOMSerializer extends DOMSerializer {
  * Post-processing for the above DOMSerializer.
  *
  * The extensions render each flat list item as a list (ol or ul) containing
- * a single li. This function joins adjacent lists and also nests them when indented.
+ * a single li. This function joins adjacent lists and also nests them when indented,
+ * in-place.
  *
  * This function also cleans up the HTML a bit, especially when copying, to avoid confusing other programs.
+ *
+ * Note: This function does **not** recurse into dom. This is okay because serlializeFragment is
+ * itself called recursively (w.r.t. the ProseMirror doc).
  *
  * @param usedFor Hint used to tune behavior for converting an entire editor state ("getHTML")
  * or copying a fragment to the clipboard ("clipboard").
  */
-function joinListElements<T extends Element | DocumentFragment>(
-  doc: T,
+function joinListElements(
+  dom: Element | DocumentFragment,
   usedFor: "getHTML" | "clipboard",
-): T {
+): void {
   // Store the last UL/OL elements for each indent level.
   let lastLists: Element[] = [];
 
-  for (let i = 0; i < doc.children.length; i++) {
-    const block = doc.children.item(i) as HTMLElement | null;
+  for (let i = 0; i < dom.children.length; i++) {
+    const block = dom.children.item(i) as HTMLElement | null;
     if (!block) continue;
 
     const listType = getElementListType(block);
@@ -223,7 +228,6 @@ function joinListElements<T extends Element | DocumentFragment>(
       lastLists = [];
     }
   }
-  return doc;
 }
 
 /**
