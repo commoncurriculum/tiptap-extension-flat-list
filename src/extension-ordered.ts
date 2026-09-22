@@ -69,8 +69,17 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         tag: "li",
         getAttrs: (element) => {
           if (element.parentElement?.tagName === "OL") {
+            // Infer counter from its index in the parent.
+            // For normal edits, counter is set by the postprocessor-plugin,
+            // but that doesn't work for the initial content.
+            const indexInParent = Array.from(element.parentElement.children)
+              .filter((child) => child.tagName === "LI")
+              .indexOf(element);
+            const counter = indexInParent + 1;
+
             return {
               indent: computeIndent(element),
+              counter,
               _isTempPropped: hasNoContentBeforeChildList(element),
             };
           } else {
