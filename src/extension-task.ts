@@ -59,6 +59,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
       checked: {
         default: false,
         keepOnSplit: false,
+        rendered: false,
       },
       /**
        * Internal attr used to indicate that the list item is being "propped up" by an &nbsp;
@@ -135,7 +136,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           // For computeIndent and joinListElements.
           "data-list-indent": node.attrs.indent,
           // For computeChecked.
-          "data-checked": node.attrs.checked,
+          "data-checked": node.attrs.checked ? "": null,
           style: "position: relative;",
         },
         [
@@ -151,8 +152,8 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
             {
               type: "checkbox",
               // Prevent interaction since this is only for external HTML.
-              disabled: true,
-              checked: node.attrs.checked ? "checked" : null,
+              disabled: "",
+              checked: node.attrs.checked ? "" : null,
               ariaLabel: checkboxAriaLabel(this.options, node),
             },
           ],

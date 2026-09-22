@@ -27,9 +27,7 @@ export function computeIndent(element: HTMLElement) {
 }
 
 export function computeChecked(element: HTMLElement) {
-  const dataChecked = element.getAttribute("data-checked");
-
-  return dataChecked === "" || dataChecked === "true";
+  return element.hasAttribute("data-checked") && element.getAttribute("data-checked") !== "false"
 }
 
 export function parseIntegerAttr(attr: string | null): number | undefined {
