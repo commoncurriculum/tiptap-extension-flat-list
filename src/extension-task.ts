@@ -106,7 +106,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
             // ProseMirror will ignore such an LI and only parse its child list.
             // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
             // Our plugins watch _isTempPropped and remove this temporary char.
-            contentElement.prepend(document.createTextNode("\u00A0"));
+            contentElement.prepend(element.ownerDocument.createTextNode("\u00A0"));
           }
           return contentElement;
         },
