@@ -156,7 +156,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
               // Prevent interaction since this is only for external HTML.
               disabled: "",
               checked: node.attrs.checked ? "" : null,
-              ariaLabel: checkboxAriaLabel(this.options, node),
+              "aria-label": checkboxAriaLabel(this.options, node),
             },
           ],
           ["span"],
