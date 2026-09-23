@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.commonjs.json",
   "compilerOptions": {
+    "noEmit": true,
     "rootDir": "."
   },
   // All folders to lint
