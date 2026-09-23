@@ -58,16 +58,16 @@
   "scripts": {
     "start": "vite serve demo",
     "prepack": "npm run clean && npm run build && npm run test",
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.commonjs.json",
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.commonjs.json",
     "watch": "npm-run-all --parallel watch:esm watch:cjs",
-    "watch:esm": "tsc -p tsconfig.json -w",
+    "watch:esm": "tsc -p tsconfig.esm.json -w",
     "watch:cjs": "tsc -p tsconfig.commonjs.json -w",
     "test": "npm-run-all test:*",
     "test:lint": "eslint --ext .ts,.js .",
     "test:format": "prettier --check .",
     "fix": "npm-run-all fix:*",
     "fix:format": "prettier --write .",
-    "docs": "typedoc --options typedoc.json src/index.ts",
+    "docs": "typedoc --options typedoc.json --tsconfig tsconfig.esm.json src/index.ts",
     "clean": "rm -rf build docs"
   }
 }
