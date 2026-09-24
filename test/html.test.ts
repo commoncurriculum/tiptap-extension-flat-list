@@ -18,9 +18,21 @@ describe("normal HTML lists", () => {
     return JoinListDOMSerializer.getHTML(editor);
   }
 
-  /** Nudges the editor so that the postprocessor plugin runs (it only runs on transactions). */
+  /**
+   * Nudges the editor so that the postprocessor plugin runs.
+   */
   function runPostprocessor() {
-    editor.commands.setTextSelection(1);
+    // Insert a char and then delete it, somewhere that a char is allowed.
+    let textPos = -1;
+    editor.state.doc.descendants((node, pos) => {
+      if (textPos !== -1) return false;
+      if (node.isTextblock) textPos = pos + 1;
+      return textPos === -1;
+    });
+    const tr = editor.state.tr
+      .insertText("x", textPos)
+      .delete(textPos, textPos + 1);
+    editor.view.dispatch(tr);
   }
 
   describe("parsing", () => {

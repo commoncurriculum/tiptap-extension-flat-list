@@ -14,7 +14,9 @@ import { orderedNodeName } from "./extension-names";
 export function flatListPostprocessorPlugin() {
   return new Plugin({
     key: new PluginKey("flatListPostprocessorPlugin"),
-    appendTransaction(_transactions, _oldState, newState) {
+    appendTransaction(transactions, _oldState, newState) {
+      if (!transactions.some((tr) => tr.docChanged)) return null;
+
       let tr = newState.tr;
       let updated = false;
 
