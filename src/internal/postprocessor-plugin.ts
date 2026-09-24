@@ -2,6 +2,7 @@ import { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 import { orderedNodeName } from "./extension-names";
+import { getIndent } from "./utils";
 
 // TODO: In case collaboration leads to invalid indent states,
 // also loop over indent levels in this plugin.
@@ -34,7 +35,7 @@ export function flatListPostprocessorPlugin() {
           let nodeAttrs = node.attrs;
 
           // Indents.
-          const indent = nodeAttrs.indent as number;
+          const indent = getIndent(node);
           if (node.type.name === orderedNodeName) {
             const counterValue = (parentLastCounters[indent] ?? 0) + 1;
 

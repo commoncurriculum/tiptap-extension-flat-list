@@ -1,7 +1,25 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
-import { NodeType } from "@tiptap/pm/model";
+import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { isFlatListNode, ListType } from "../list-type";
 import { taskNodeName } from "./extension-names";
+
+/**
+ * Returns a flat list node's indent level.
+ *
+ * The indent attr is stored as undefined when it is 0 (the default), so that it
+ * is omitted from the doc's JSON.
+ */
+export function getIndent(node: ProseMirrorNode): number {
+  return (node.attrs["indent"] as number | undefined) ?? 0;
+}
+
+/**
+ * Converts an indent level to its stored attr value: undefined for 0 (the default),
+ * so that it is omitted from the doc's JSON.
+ */
+export function indentAttr(indent: number | undefined): number | undefined {
+  return indent === 0 ? undefined : indent;
+}
 
 /**
  * Computes the indent level of an `<li>`.
@@ -147,7 +165,7 @@ export function flatListTypeInputRule(config: {
           return null;
         }
         // Preserve indent.
-        indent = curNode.attrs["indent"] ?? 0;
+        indent = getIndent(curNode);
       }
 
       let checked: boolean | undefined = undefined;
@@ -157,7 +175,10 @@ export function flatListTypeInputRule(config: {
 
       state.tr
         .delete(range.from, range.to)
-        .setBlockType(range.from, range.from, config.type, { indent, checked });
+        .setBlockType(range.from, range.from, config.type, {
+          indent: indentAttr(indent),
+          checked,
+        });
       return;
     },
   });

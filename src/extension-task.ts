@@ -4,6 +4,8 @@ import { taskNodeName } from "./internal/extension-names";
 import {
   computeChecked,
   computeIndent,
+  getIndent,
+  indentAttr,
   flatListTypeInputRule,
   getContentElement,
   replaceParagraphsWithBreaks,
@@ -52,7 +54,8 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
   addAttributes() {
     return {
       indent: {
-        default: 0,
+        // 0 -> undefined, to save space in the JSON.
+        default: undefined,
         rendered: false,
       },
       checked: {
@@ -78,7 +81,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
               element.parentElement.getAttribute("data-task-list");
             if (attrTaskList === "" || attrTaskList === "true") {
               return {
-                indent: computeIndent(element),
+                indent: indentAttr(computeIndent(element)),
                 checked: computeChecked(element),
               };
             }
@@ -105,7 +108,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
       "ul",
       {
         "data-task-list": "",
-        style: `margin-bottom: 0; margin-left: ${20 * node.attrs.indent}px; list-style-type: none;`,
+        style: `margin-bottom: 0; margin-left: ${20 * getIndent(node)}px; list-style-type: none;`,
       },
       // Layout is from https://github.com/ueberdosis/tiptap/blob/main/packages/extension-task-item/src/task-item.ts
       // Instead of using the flex-based example styles at https://tiptap.dev/docs/editor/extensions/nodes/task-item,
@@ -115,7 +118,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         "li",
         {
           // For computeIndent and joinListElements.
-          "data-list-indent": node.attrs.indent,
+          "data-list-indent": getIndent(node),
           // For computeChecked.
           "data-checked": node.attrs.checked ? "" : null,
           style: "position: relative;",
@@ -159,14 +162,14 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
       const ul = document.createElement("ul");
       ul.style.cssText = `margin-bottom: 0; margin-left: ${
-        20 * node.attrs.indent
+        20 * getIndent(node)
       }px; list-style-type: none;`;
       Object.entries(HTMLAttributes).forEach(([key, value]) => {
         ul.setAttribute(key, value);
       });
 
       const li = document.createElement("li");
-      li.setAttribute("data-list-indent", node.attrs.indent);
+      li.setAttribute("data-list-indent", String(getIndent(node)));
       li.setAttribute("data-checked", node.attrs.checked);
       li.style.cssText = "position: relative;";
       // Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
@@ -239,9 +242,9 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
           // Re-do all assignments above that are functions of the node attrs.
           ul.style.cssText = `margin-bottom: 0; margin-left: ${
-            20 * updatedNode.attrs.indent
+            20 * getIndent(updatedNode)
           }px; list-style-type: none;`;
-          li.setAttribute("data-list-indent", updatedNode.attrs.indent);
+          li.setAttribute("data-list-indent", String(getIndent(updatedNode)));
           li.setAttribute("data-checked", updatedNode.attrs.checked);
           input.checked = updatedNode.attrs.checked;
           input.ariaLabel = checkboxAriaLabel(this.options, updatedNode);

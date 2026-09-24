@@ -1,5 +1,6 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
+import { getIndent, indentAttr } from "./utils";
 
 /**
  * ProseMirror plugin that massages pasted list items.
@@ -20,8 +21,8 @@ export function flatListPastePlugin() {
         let contextIndent = 0;
         let lastIndent = -1;
         if (isFlatListNode($from.parent)) {
-          contextIndent = $from.parent.attrs.indent;
-          lastIndent = $from.parent.attrs.indent;
+          contextIndent = getIndent($from.parent);
+          lastIndent = getIndent($from.parent);
         }
 
         // Loop over top-level nodes in the slice, setting the indent on list items.
@@ -32,10 +33,10 @@ export function flatListPastePlugin() {
           if (isFlatListNode(child)) {
             if (delta === null) {
               // Start a new list, with this node at indent = contextIndent.
-              delta = contextIndent - child.attrs.indent;
+              delta = contextIndent - getIndent(child);
             }
 
-            let newIndent = child.attrs.indent + delta;
+            let newIndent = getIndent(child) + delta;
 
             // Clamp newIndent, also adjusting following indents by the same amount.
             if (newIndent < 0) {
@@ -49,7 +50,7 @@ export function flatListPastePlugin() {
 
             // Update child in the slice.
             // @ts-expect-error Mutating directly for convenience.
-            child.attrs.indent = newIndent;
+            child.attrs.indent = indentAttr(newIndent);
             // slice = new Slice(
             //   slice.content.replaceChild(
             //     i,

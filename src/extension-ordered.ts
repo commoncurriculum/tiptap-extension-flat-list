@@ -2,6 +2,8 @@ import { Node } from "@tiptap/core";
 import { orderedNodeName } from "./internal/extension-names";
 import {
   computeIndent,
+  getIndent,
+  indentAttr,
   flatListTypeInputRule,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
@@ -40,7 +42,8 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
   addAttributes() {
     return {
       indent: {
-        default: 0,
+        // 0 -> undefined, to save space in the JSON.
+        default: undefined,
         rendered: false,
       },
       counter: {
@@ -68,7 +71,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
             const counter = indexInParent + 1;
 
             return {
-              indent: computeIndent(element),
+              indent: indentAttr(computeIndent(element)),
               counter,
             };
           } else {
@@ -85,7 +88,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
   },
 
   renderHTML({ node }) {
-    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0);
+    const listStyleType = this.options.getListStyleType(getIndent(node));
     return [
       "ol",
       {
@@ -94,14 +97,14 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         // If you add other attrs here that shouldn't appear in copied lists,
         // modify joinListElements to remove them too.
         style: `margin-bottom: 0; margin-left: ${
-          20 * node.attrs.indent
+          20 * getIndent(node)
         }px; list-style-type: ${listStyleType};`,
       },
       [
         "li",
         {
           // For computeIndent and joinListElements.
-          "data-list-indent": node.attrs.indent,
+          "data-list-indent": getIndent(node),
         },
         0,
       ],
