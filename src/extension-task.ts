@@ -118,7 +118,8 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         "li",
         {
           // For computeIndent and joinListElements.
-          "data-list-indent": getIndent(node),
+          // Omitted when 0 (both treat a missing attr as 0).
+          "data-list-indent": getIndent(node) || null,
           // For computeChecked.
           "data-checked": node.attrs.checked ? "" : null,
           style: "position: relative;",

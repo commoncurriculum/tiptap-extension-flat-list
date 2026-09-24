@@ -104,7 +104,8 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         "li",
         {
           // For computeIndent and joinListElements.
-          "data-list-indent": getIndent(node),
+          // Omitted when 0 (both treat a missing attr as 0).
+          "data-list-indent": getIndent(node) || null,
         },
         0,
       ],

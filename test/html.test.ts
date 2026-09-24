@@ -300,3 +300,22 @@ describe("normal HTML lists", () => {
     });
   });
 });
+
+/** Tests for our own renderHTML output (getHTML without JoinListDOMSerializer). */
+describe("renderHTML", () => {
+  let editor: Editor;
+
+  afterEach(() => editor.destroy());
+
+  it("omits data-list-indent when the indent is 0", () => {
+    editor = createEditor(
+      "<ul><li>a<ul><li>a2</li></ul></li></ul><ol><li>b</li></ol><ul data-task-list><li>c</li></ul>",
+    );
+    const container = document.createElement("div");
+    container.innerHTML = editor.getHTML();
+    const indents = [...container.querySelectorAll("li")].map((li) =>
+      li.getAttribute("data-list-indent"),
+    );
+    assert.deepEqual(indents, [null, "1", null, null]);
+  });
+});

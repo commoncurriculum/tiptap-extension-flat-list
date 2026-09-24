@@ -78,7 +78,11 @@ describe("FlatListTask renderHTML", () => {
       const ul = renderTask({ indent });
       const li = ul.firstElementChild as HTMLElement;
 
-      assert.strictEqual(li.getAttribute("data-list-indent"), String(indent));
+      // Omitted when 0.
+      assert.strictEqual(
+        li.getAttribute("data-list-indent"),
+        indent === 0 ? null : String(indent),
+      );
       assert.strictEqual(ul.style.marginLeft, `${20 * indent}px`);
       // The bullet is drawn by the checkbox, not by the UL.
       assert.strictEqual(ul.style.listStyleType, "none");
