@@ -2,12 +2,10 @@ import { Node } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { taskNodeName } from "./internal/extension-names";
 import {
-  closeMarkerParseRule,
   computeChecked,
   computeIndent,
   flatListTypeInputRule,
   getContentElement,
-  markChildListForClose,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -67,8 +65,6 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
   parseHTML() {
     return [
-      // Closes an empty list item before its child list; see markChildListForClose.
-      closeMarkerParseRule,
       // These parse rules work on our rendered HTML as well as arbitrarily nested
       // lists (from pasting / loading normal HTML).
       {
@@ -93,7 +89,6 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         contentElement: (element: HTMLElement) => {
           const contentElement = getContentElement("task", element);
           replaceParagraphsWithBreaks(contentElement);
-          markChildListForClose(contentElement);
           return contentElement;
         },
       },

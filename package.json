@@ -34,7 +34,8 @@
   "sideEffects": false,
   "peerDependencies": {
     "@tiptap/core": "2.x || 3.x",
-    "@tiptap/pm": "2.x || 3.x"
+    "@tiptap/pm": "2.x || 3.x",
+    "prosemirror-model": ">=1.25.1"
   },
   "devDependencies": {
     "@tiptap/core": "3.0.9",
@@ -55,6 +56,7 @@
     "jsdom": "^30.1.1",
     "mocha": "^11.7.6",
     "prettier": "^3.6.2",
+    "prosemirror-model": "^1.25.12",
     "tsx": "^4.23.1",
     "typedoc": "^0.28.10",
     "typescript": "^5.9.2",

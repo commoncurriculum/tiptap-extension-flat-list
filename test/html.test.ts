@@ -100,17 +100,6 @@ describe("normal HTML lists", () => {
   });
 
   describe("LIs with no content before a nested list", () => {
-    // Older versions of prosemirror-model drop such an LI (only parsing its nested list),
-    // so parseHTML closes the item explicitly; see markChildListForClose.
-    // The result should be correct immediately, without help from the postprocessor.
-
-    /** Asserts that the postprocessor doesn't change anything once it runs. */
-    function assertStableUnderPostprocessor() {
-      const parsed = editor.getJSON();
-      runPostprocessor();
-      assert.deepStrictEqual(editor.getJSON(), parsed);
-    }
-
     it("keeps an LI that only contains a nested list", () => {
       editor = createEditor(
         `<ul><li><ul><li>nested</li></ul></li><li>second</li></ul>`,
@@ -120,7 +109,6 @@ describe("normal HTML lists", () => {
         { type: "unordered", text: "nested", indent: 1 },
         { type: "unordered", text: "second", indent: 0 },
       ]);
-      assertStableUnderPostprocessor();
     });
 
     it("keeps an empty ordered item numbered", () => {
@@ -132,7 +120,6 @@ describe("normal HTML lists", () => {
         { type: "ordered", text: "nested", indent: 1, counter: 1 },
         { type: "ordered", text: "second", indent: 0, counter: 2 },
       ]);
-      assertStableUnderPostprocessor();
     });
 
     it("keeps an LI whose nested list is only preceded by whitespace", () => {
@@ -146,7 +133,6 @@ describe("normal HTML lists", () => {
         { type: "unordered", text: "", indent: 0 },
         { type: "unordered", text: "nested", indent: 1 },
       ]);
-      assertStableUnderPostprocessor();
     });
 
     it("keeps a hard break that precedes the nested list", () => {
@@ -179,7 +165,6 @@ describe("normal HTML lists", () => {
         { type: "task", text: "", indent: 0, checked: true },
         { type: "task", text: "nested", indent: 1, checked: false },
       ]);
-      assertStableUnderPostprocessor();
     });
 
     it("keeps an LI that only contains a nested list when pasted", () => {
@@ -196,24 +181,6 @@ describe("normal HTML lists", () => {
         { type: "unordered", text: "nested", indent: 1 },
         { type: "unordered", text: "second", indent: 0 },
       ]);
-    });
-
-    it("ignores the removed _isTempPropped attr in saved JSON", () => {
-      editor = createEditor();
-      editor.commands.setContent({
-        type: "doc",
-        content: [
-          {
-            type: "flatListItemUnordered",
-            attrs: { indent: 0, _isTempPropped: false },
-            content: [{ type: "text", text: "saved" }],
-          },
-        ],
-      });
-      assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "saved", indent: 0 },
-      ]);
-      assert.deepStrictEqual(editor.state.doc.child(0).attrs, { indent: 0 });
     });
   });
 

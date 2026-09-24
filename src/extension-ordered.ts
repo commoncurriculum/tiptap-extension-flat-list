@@ -1,10 +1,8 @@
 import { Node } from "@tiptap/core";
 import { orderedNodeName } from "./internal/extension-names";
 import {
-  closeMarkerParseRule,
   computeIndent,
   flatListTypeInputRule,
-  markChildListForClose,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -54,8 +52,6 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
 
   parseHTML() {
     return [
-      // Closes an empty list item before its child list; see markChildListForClose.
-      closeMarkerParseRule,
       // These parse rules work on our rendered HTML as well as arbitrarily nested
       // lists (from pasting / loading normal HTML).
       {
@@ -82,7 +78,6 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         },
         contentElement: (element: HTMLElement) => {
           replaceParagraphsWithBreaks(element);
-          markChildListForClose(element);
           return element;
         },
       },
