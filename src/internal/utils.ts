@@ -1,7 +1,11 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
-import { NodeType } from "@tiptap/pm/model";
+import { NodeType, type TagParseRule } from "@tiptap/pm/model";
 import { isFlatListNode, ListType } from "../list-type";
-import { taskNodeName } from "./extension-names";
+import {
+  orderedNodeName,
+  taskNodeName,
+  unorderedNodeName,
+} from "./extension-names";
 
 /**
  * Computes the indent level of an `<li>`.
@@ -60,17 +64,35 @@ export function getContentElement(
 }
 
 /**
- * Whether the given element has a child list with no non-collapsible content beforehand.
- * These need special handling in parseHTML to prevent ProseMirror from ignoring the LI
- * and just parsing its child list.
+ * Attr for the marker element inserted by markChildListForClose.
  */
-export function hasNoContentBeforeChildList(
-  contentElement: HTMLElement,
-): boolean {
-  // If an li contains a nested list but no (non-collapsible) leading content,
-  // ProseMirror will parse the whole thing as one flat list node.
-  // Prevent this by propping it up with a leading `&nbsp;`, later removed by
-  // flatListPostprocessorPlugin or pastePlugin.
+const closeMarkerAttr = "data-flat-list-close";
+
+/**
+ * Parse rule that closes the current flat list item when it encounters a marker
+ * inserted by markChildListForClose, without outputting anything.
+ *
+ * Include this in the parseHTML() rules of every flat list node.
+ */
+export const closeMarkerParseRule = {
+  tag: `span[${closeMarkerAttr}]`,
+  closeParent: true,
+  // Only close the parent if it is actually a flat list item.
+  context: [orderedNodeName, unorderedNodeName, taskNodeName]
+    .map((name) => name + "/")
+    .join("|"),
+} satisfies TagParseRule;
+
+/**
+ * If the given LI content element has a child list with no non-collapsible content beforehand,
+ * inserts a marker element just before that list (modifying element in-place).
+ *
+ * Without this, prosemirror-model < 1.25.1 ignores such an LI and only parses its child list:
+ * ProseMirror only closes the (still-empty) flat list item when the child list starts
+ * if the item has inline content, and the child list's LIs can't be placed inside it.
+ * The marker is parsed by closeMarkerParseRule, which closes the item explicitly.
+ */
+export function markChildListForClose(contentElement: HTMLElement): void {
   let childToCheck = contentElement.firstChild;
   if (
     (childToCheck instanceof Text &&
@@ -82,13 +104,19 @@ export function hasNoContentBeforeChildList(
     // The regex is from https://github.com/ProseMirror/prosemirror-model/blob/20d26c9843d6a69a1d417d937c401537ee0b2342/src/from_dom.ts#L443.
     // We also count BRs as collapsible in case they come from extension-external-trailing-break
     // (hence will be ignored during parsing).
-    childToCheck = contentElement.childNodes.item(1);
+    // Note that we insert the marker after the BR, so if the BR is instead parsed as a hard break,
+    // the marker just closes the item slightly earlier than the child list would have.
+    childToCheck = childToCheck.nextSibling;
   }
 
-  return (
+  if (
     childToCheck instanceof HTMLElement &&
     (childToCheck.tagName === "UL" || childToCheck.tagName === "OL")
-  );
+  ) {
+    const marker = contentElement.ownerDocument.createElement("span");
+    marker.setAttribute(closeMarkerAttr, "");
+    contentElement.insertBefore(marker, childToCheck);
+  }
 }
 
 /**

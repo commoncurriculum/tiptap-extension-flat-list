@@ -1,9 +1,10 @@
 import { Node } from "@tiptap/core";
 import { orderedNodeName } from "./internal/extension-names";
 import {
+  closeMarkerParseRule,
   computeIndent,
   flatListTypeInputRule,
-  hasNoContentBeforeChildList,
+  markChildListForClose,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -48,20 +49,13 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         default: 1,
         rendered: false,
       },
-      /**
-       * Internal attr used to indicate that the list item is being "propped up" by an &nbsp;
-       * for help with parsing. It is temporary and will be removed shortly after parsing
-       * by our plugins.
-       */
-      _isTempPropped: {
-        default: false,
-        rendered: false,
-      },
     };
   },
 
   parseHTML() {
     return [
+      // Closes an empty list item before its child list; see markChildListForClose.
+      closeMarkerParseRule,
       // These parse rules work on our rendered HTML as well as arbitrarily nested
       // lists (from pasting / loading normal HTML).
       {
@@ -80,7 +74,6 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
             return {
               indent: computeIndent(element),
               counter,
-              _isTempPropped: hasNoContentBeforeChildList(element),
             };
           } else {
             // Fall through to unordered or task list (if installed).
@@ -89,12 +82,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
         },
         contentElement: (element: HTMLElement) => {
           replaceParagraphsWithBreaks(element);
-          if (hasNoContentBeforeChildList(element)) {
-            // ProseMirror will ignore such an LI and only parse its child list.
-            // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
-            // Our plugins watch _isTempPropped and remove this temporary char.
-            element.prepend(element.ownerDocument.createTextNode("\u00A0"));
-          }
+          markChildListForClose(element);
           return element;
         },
       },

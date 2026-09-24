@@ -2,11 +2,12 @@ import { Node } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { taskNodeName } from "./internal/extension-names";
 import {
+  closeMarkerParseRule,
   computeChecked,
   computeIndent,
   flatListTypeInputRule,
   getContentElement,
-  hasNoContentBeforeChildList,
+  markChildListForClose,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -61,20 +62,13 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         keepOnSplit: false,
         rendered: false,
       },
-      /**
-       * Internal attr used to indicate that the list item is being "propped up" by an &nbsp;
-       * for help with parsing. It is temporary and will be removed shortly after parsing
-       * by our plugins.
-       */
-      _isTempPropped: {
-        default: false,
-        rendered: false,
-      },
     };
   },
 
   parseHTML() {
     return [
+      // Closes an empty list item before its child list; see markChildListForClose.
+      closeMarkerParseRule,
       // These parse rules work on our rendered HTML as well as arbitrarily nested
       // lists (from pasting / loading normal HTML).
       {
@@ -90,9 +84,6 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
               return {
                 indent: computeIndent(element),
                 checked: computeChecked(element),
-                _isTempPropped: hasNoContentBeforeChildList(
-                  getContentElement("task", element),
-                ),
               };
             }
           }
@@ -102,14 +93,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
         contentElement: (element: HTMLElement) => {
           const contentElement = getContentElement("task", element);
           replaceParagraphsWithBreaks(contentElement);
-          if (hasNoContentBeforeChildList(contentElement)) {
-            // ProseMirror will ignore such an LI and only parse its child list.
-            // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
-            // Our plugins watch _isTempPropped and remove this temporary char.
-            contentElement.prepend(
-              element.ownerDocument.createTextNode("\u00A0"),
-            );
-          }
+          markChildListForClose(contentElement);
           return contentElement;
         },
       },

@@ -99,40 +99,40 @@ describe("normal HTML lists", () => {
     });
   });
 
-  describe("the tempPropped hack", () => {
-    // An LI whose content is just a nested list would otherwise be dropped by ProseMirror,
-    // so parseHTML props it up with a temporary `&nbsp;`, which the postprocessor removes.
+  describe("LIs with no content before a nested list", () => {
+    // Older versions of prosemirror-model drop such an LI (only parsing its nested list),
+    // so parseHTML closes the item explicitly; see markChildListForClose.
+    // The result should be correct immediately, without help from the postprocessor.
+
+    /** Asserts that the postprocessor doesn't change anything once it runs. */
+    function assertStableUnderPostprocessor() {
+      const parsed = editor.getJSON();
+      runPostprocessor();
+      assert.deepStrictEqual(editor.getJSON(), parsed);
+    }
 
     it("keeps an LI that only contains a nested list", () => {
       editor = createEditor(
         `<ul><li><ul><li>nested</li></ul></li><li>second</li></ul>`,
       );
-      // Before the postprocessor runs, the propping char is still there.
-      assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: " ", indent: 0 },
-        { type: "unordered", text: "nested", indent: 1 },
-        { type: "unordered", text: "second", indent: 0 },
-      ]);
-
-      // The postprocessor removes it, leaving an empty list item.
-      runPostprocessor();
       assert.deepStrictEqual(summarize(editor), [
         { type: "unordered", text: "", indent: 0 },
         { type: "unordered", text: "nested", indent: 1 },
         { type: "unordered", text: "second", indent: 0 },
       ]);
+      assertStableUnderPostprocessor();
     });
 
     it("keeps an empty ordered item numbered", () => {
       editor = createEditor(
         `<ol><li><ol><li>nested</li></ol></li><li>second</li></ol>`,
       );
-      runPostprocessor();
       assert.deepStrictEqual(summarize(editor), [
         { type: "ordered", text: "", indent: 0, counter: 1 },
         { type: "ordered", text: "nested", indent: 1, counter: 1 },
         { type: "ordered", text: "second", indent: 0, counter: 2 },
       ]);
+      assertStableUnderPostprocessor();
     });
 
     it("keeps an LI whose nested list is only preceded by whitespace", () => {
@@ -142,22 +142,78 @@ describe("normal HTML lists", () => {
           <ul><li>nested</li></ul>
         </li>
       </ul>`);
-      runPostprocessor();
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "unordered", text: "", indent: 0 },
+        { type: "unordered", text: "nested", indent: 1 },
+      ]);
+      assertStableUnderPostprocessor();
+    });
+
+    it("keeps a hard break that precedes the nested list", () => {
+      editor = createEditor(`<ul><li><br><ul><li>nested</li></ul></li></ul>`);
+      const first = editor.state.doc.child(0);
+      assert.strictEqual(first.childCount, 1);
+      assert.strictEqual(first.child(0).type.name, "hardBreak");
       assert.deepStrictEqual(summarize(editor), [
         { type: "unordered", text: "", indent: 0 },
         { type: "unordered", text: "nested", indent: 1 },
       ]);
     });
 
-    it("keeps a propped task item", () => {
+    it("keeps several levels of empty LIs", () => {
+      editor = createEditor(
+        `<ul><li><ul><li><ul><li>deep</li></ul></li></ul></li></ul>`,
+      );
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "unordered", text: "", indent: 0 },
+        { type: "unordered", text: "", indent: 1 },
+        { type: "unordered", text: "deep", indent: 2 },
+      ]);
+    });
+
+    it("keeps an empty task item", () => {
       editor = createEditor(
         `<ul data-task-list=""><li data-checked=""><div><ul data-task-list=""><li><div>nested</div></li></ul></div></li></ul>`,
       );
-      runPostprocessor();
       assert.deepStrictEqual(summarize(editor), [
         { type: "task", text: "", indent: 0, checked: true },
         { type: "task", text: "nested", indent: 1, checked: false },
       ]);
+      assertStableUnderPostprocessor();
+    });
+
+    it("keeps an LI that only contains a nested list when pasted", () => {
+      editor = createEditor(`<p>intro</p><p></p>`);
+      setCursorIn(editor, 1);
+      editor.view.pasteHTML(
+        `<ul><li><ul><li>nested</li></ul></li><li>second</li></ul>`,
+        // jsdom lacks ClipboardEvent, which pasteHTML would otherwise construct.
+        new Event("paste") as ClipboardEvent,
+      );
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "paragraph", text: "intro" },
+        { type: "unordered", text: "", indent: 0 },
+        { type: "unordered", text: "nested", indent: 1 },
+        { type: "unordered", text: "second", indent: 0 },
+      ]);
+    });
+
+    it("ignores the removed _isTempPropped attr in saved JSON", () => {
+      editor = createEditor();
+      editor.commands.setContent({
+        type: "doc",
+        content: [
+          {
+            type: "flatListItemUnordered",
+            attrs: { indent: 0, _isTempPropped: false },
+            content: [{ type: "text", text: "saved" }],
+          },
+        ],
+      });
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "unordered", text: "saved", indent: 0 },
+      ]);
+      assert.deepStrictEqual(editor.state.doc.child(0).attrs, { indent: 0 });
     });
   });
 
@@ -228,8 +284,6 @@ describe("normal HTML lists", () => {
       editor = createEditor(
         `<ul><li><ul><li>nested</li></ul></li><li>second</li></ul>`,
       );
-      // Needs the postprocessor to strip the propping char first.
-      runPostprocessor();
       assert.strictEqual(
         JoinListDOMSerializer.getHTML(editor),
         `<ul style="margin-bottom: 0px; list-style-type: disc;">` +
