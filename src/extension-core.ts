@@ -4,6 +4,7 @@ import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { taskNodeName } from "./internal/extension-names";
 import { flatListPastePlugin } from "./internal/paste-plugin";
 import { flatListPostprocessorPlugin } from "./internal/postprocessor-plugin";
+import { getIndent, indentAttr } from "./internal/utils";
 import { getFlatListNodeName, isFlatListNode, ListType } from "./list-type";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list
@@ -83,9 +84,12 @@ export const FlatListCore = Extension.create({
 
           const attrsFn = (oldNode: ProseMirrorNode): Record<string, any> => {
             if (isFlatListNode(oldNode)) {
-              const newAttrs = { ...attributes };
+              const newAttrs = {
+                ...attributes,
+                indent: indentAttr(attributes.indent),
+              };
               if (attributes.indent === undefined) {
-                // Preserve indent.
+                // Preserve indent. Callers must pass an explicit 0 to set it to the default.
                 newAttrs.indent = oldNode.attrs.indent;
               }
               if (
@@ -97,7 +101,8 @@ export const FlatListCore = Extension.create({
                 newAttrs.checked = oldNode.attrs.checked;
               }
               return newAttrs;
-            } else return attributes;
+            } else
+              return { ...attributes, indent: indentAttr(attributes.indent) };
           };
 
           const type = getNodeType(getFlatListNodeName(listType), state.schema);
@@ -167,7 +172,7 @@ export const FlatListCore = Extension.create({
             } = range;
             state.doc.nodesBetween(from, to, (node, pos) => {
               if (isFlatListNode(node)) {
-                const newIndent = (node.attrs["indent"] ?? 0) + 1;
+                const newIndent = getIndent(node) + 1;
                 // Only indent if it's at most one more than the previous list item
                 // (accounting for tr's prior changes).
                 const resolvedInTr = tr.doc.resolve(pos);
@@ -176,7 +181,7 @@ export const FlatListCore = Extension.create({
                 ).node;
                 const prevSiblingIndent =
                   prevSiblingInTr && isFlatListNode(prevSiblingInTr)
-                    ? (prevSiblingInTr.attrs["indent"] ?? 0)
+                    ? getIndent(prevSiblingInTr)
                     : -1;
                 if (newIndent <= prevSiblingIndent + 1) {
                   applicable = true;
@@ -208,10 +213,10 @@ export const FlatListCore = Extension.create({
             } = range;
             state.doc.nodesBetween(from, to, (node, pos) => {
               if (isFlatListNode(node)) {
-                const indent = node.attrs["indent"] ?? 0;
+                const indent = getIndent(node);
                 if (indent > 0) {
                   applicable = true;
-                  tr.setNodeAttribute(pos, "indent", indent - 1);
+                  tr.setNodeAttribute(pos, "indent", indentAttr(indent - 1));
                 } else if (canConvert) {
                   applicable = true;
                   tr.setNodeMarkup(pos, state.schema.nodes["paragraph"]);
@@ -237,10 +242,14 @@ export const FlatListCore = Extension.create({
           ) {
             const subsequentItem = $lastDedented.parent.child(index);
             if (!isFlatListNode(subsequentItem)) break;
-            const indent = subsequentItem.attrs["indent"] ?? 0;
+            const indent = getIndent(subsequentItem);
             if (indent <= lastDedented!.oldIndent) break;
 
-            tr.setNodeAttribute(subsequentItemPos, "indent", indent - 1);
+            tr.setNodeAttribute(
+              subsequentItemPos,
+              "indent",
+              indentAttr(indent - 1),
+            );
 
             subsequentItemPos += subsequentItem.nodeSize;
           }

@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.commonjs.json",
-  "compilerOptions": {
-    "rootDir": "."
-  },
-  // All folders to lint
-  "include": ["src", "demo"]
-}

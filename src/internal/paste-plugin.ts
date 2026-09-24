@@ -1,33 +1,28 @@
-import { Slice } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
+import { getIndent, indentAttr } from "./utils";
 
 /**
  * ProseMirror plugin that massages pasted list items.
  *
- * 1. Sets indent levels, following these rules (matching Notion's apparent behavior):
+ * Sets indent levels, following these rules (matching Notion's apparent behavior):
  *   - The first pasted list item matches the indent level of the previous node in the document
  * (or 0 if that node is not a list item).
  *   - Subsequent pasted list items preserve their indent relative to their predecessor,
  * clamped to [0, predecessor + 1].
- * 2. Processes _isTempPropped indicator for the first node, resetting it and removing the propping char.
- * (We can't rely on flatListPostprocessorPlugin because the first node might be merged
- * into the paste target, forgetting _isTempPropped.)
  */
 export function flatListPastePlugin() {
   return new Plugin({
     key: new PluginKey("flatListPastePlugin"),
     props: {
       transformPasted(slice, view) {
-        // 1. Set indent levels.
-
         // Find the previous node in the document relative to the paste position.
         const $from = view.state.selection.$from;
         let contextIndent = 0;
         let lastIndent = -1;
         if (isFlatListNode($from.parent)) {
-          contextIndent = $from.parent.attrs.indent;
-          lastIndent = $from.parent.attrs.indent;
+          contextIndent = getIndent($from.parent);
+          lastIndent = getIndent($from.parent);
         }
 
         // Loop over top-level nodes in the slice, setting the indent on list items.
@@ -38,10 +33,10 @@ export function flatListPastePlugin() {
           if (isFlatListNode(child)) {
             if (delta === null) {
               // Start a new list, with this node at indent = contextIndent.
-              delta = contextIndent - child.attrs.indent;
+              delta = contextIndent - getIndent(child);
             }
 
-            let newIndent = child.attrs.indent + delta;
+            let newIndent = getIndent(child) + delta;
 
             // Clamp newIndent, also adjusting following indents by the same amount.
             if (newIndent < 0) {
@@ -55,7 +50,7 @@ export function flatListPastePlugin() {
 
             // Update child in the slice.
             // @ts-expect-error Mutating directly for convenience.
-            child.attrs.indent = newIndent;
+            child.attrs.indent = indentAttr(newIndent);
             // slice = new Slice(
             //   slice.content.replaceChild(
             //     i,
@@ -69,25 +64,6 @@ export function flatListPastePlugin() {
             contextIndent = 0;
             delta = null;
           }
-        }
-
-        // 2. Process _isTempPropped indicator for the first node.
-        const firstChild = slice.content.firstChild;
-        if (
-          firstChild &&
-          isFlatListNode(firstChild) &&
-          firstChild.attrs._isTempPropped
-        ) {
-          // Reset indicator and delete propping char.
-          const newFirstChild = firstChild.type.create(
-            { ...firstChild.attrs, _isTempPropped: undefined },
-            firstChild.content.cut(1),
-          );
-          slice = new Slice(
-            slice.content.replaceChild(0, newFirstChild),
-            slice.openStart,
-            slice.openEnd,
-          );
         }
 
         // We don't need to recurse into the slice because this special paste behavior

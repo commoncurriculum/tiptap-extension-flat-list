@@ -3,7 +3,8 @@ import { unorderedNodeName } from "./internal/extension-names";
 import {
   computeIndent,
   flatListTypeInputRule,
-  hasNoContentBeforeChildList,
+  getIndent,
+  indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -41,16 +42,8 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
   addAttributes() {
     return {
       indent: {
-        default: 0,
-        rendered: false,
-      },
-      /**
-       * Internal attr used to indicate that the list item is being "propped up" by an &nbsp;
-       * for help with parsing. It is temporary and will be removed shortly after parsing
-       * by our plugins.
-       */
-      _isTempPropped: {
-        default: false,
+        // 0 -> undefined, to save space in the JSON.
+        default: undefined,
         rendered: false,
       },
     };
@@ -66,18 +59,11 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
         tag: "li",
         getAttrs: (element) => {
           return {
-            indent: computeIndent(element),
-            _isTempPropped: hasNoContentBeforeChildList(element),
+            indent: indentAttr(computeIndent(element)),
           };
         },
         contentElement: (element: HTMLElement) => {
           replaceParagraphsWithBreaks(element);
-          if (hasNoContentBeforeChildList(element)) {
-            // ProseMirror will ignore such an LI and only parse its child list.
-            // Avoid this by propping up the LI with a temporary `&nbsp;`, indicated by _isTempPropped: true.
-            // Our plugins watch _isTempPropped and remove this temporary char.
-            element.prepend(document.createTextNode("\u00A0"));
-          }
           return element;
         },
       },
@@ -85,7 +71,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
   },
 
   renderHTML({ node }) {
-    const listStyleType = this.options.getListStyleType(node.attrs.indent ?? 0);
+    const listStyleType = this.options.getListStyleType(getIndent(node));
     return [
       "ul",
       {
@@ -93,14 +79,15 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
         // If you add other attrs here that shouldn't appear in copied lists,
         // modify joinListElements to remove them too.
         style: `margin-bottom: 0; margin-left: ${
-          20 * node.attrs.indent
+          20 * getIndent(node)
         }px; list-style-type: ${listStyleType};`,
       },
       [
         "li",
         {
           // For computeIndent and joinListElements.
-          "data-list-indent": node.attrs.indent,
+          // Omitted when 0 (both treat a missing attr as 0).
+          "data-list-indent": getIndent(node) || null,
         },
         0,
       ],

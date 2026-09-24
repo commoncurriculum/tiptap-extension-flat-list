@@ -1,7 +1,25 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
-import { NodeType } from "@tiptap/pm/model";
+import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { isFlatListNode, ListType } from "../list-type";
 import { taskNodeName } from "./extension-names";
+
+/**
+ * Returns a flat list node's indent level.
+ *
+ * The indent attr is stored as undefined when it is 0 (the default), so that it
+ * is omitted from the doc's JSON.
+ */
+export function getIndent(node: ProseMirrorNode): number {
+  return (node.attrs["indent"] as number | undefined) ?? 0;
+}
+
+/**
+ * Converts an indent level to its stored attr value: undefined for 0 (the default),
+ * so that it is omitted from the doc's JSON.
+ */
+export function indentAttr(indent: number | undefined): number | undefined {
+  return indent === 0 ? undefined : indent;
+}
 
 /**
  * Computes the indent level of an `<li>`.
@@ -27,9 +45,10 @@ export function computeIndent(element: HTMLElement) {
 }
 
 export function computeChecked(element: HTMLElement) {
-  const dataChecked = element.getAttribute("data-checked");
-
-  return dataChecked === "" || dataChecked === "true";
+  return (
+    element.hasAttribute("data-checked") &&
+    element.getAttribute("data-checked") !== "false"
+  );
 }
 
 export function parseIntegerAttr(attr: string | null): number | undefined {
@@ -56,38 +75,6 @@ export function getContentElement(
   ) {
     return li.lastElementChild;
   } else return li;
-}
-
-/**
- * Whether the given element has a child list with no non-collapsible content beforehand.
- * These need special handling in parseHTML to prevent ProseMirror from ignoring the LI
- * and just parsing its child list.
- */
-export function hasNoContentBeforeChildList(
-  contentElement: HTMLElement,
-): boolean {
-  // If an li contains a nested list but no (non-collapsible) leading content,
-  // ProseMirror will parse the whole thing as one flat list node.
-  // Prevent this by propping it up with a leading `&nbsp;`, later removed by
-  // flatListPostprocessorPlugin or pastePlugin.
-  let childToCheck = contentElement.firstChild;
-  if (
-    (childToCheck instanceof Text &&
-      // eslint-disable-next-line no-control-regex
-      /^[ \t\r\n\u000c]*$/.test(childToCheck.wholeText)) ||
-    childToCheck instanceof HTMLBRElement
-  ) {
-    // The first child is collapsible whitespace; skip.
-    // The regex is from https://github.com/ProseMirror/prosemirror-model/blob/20d26c9843d6a69a1d417d937c401537ee0b2342/src/from_dom.ts#L443.
-    // We also count BRs as collapsible in case they come from extension-external-trailing-break
-    // (hence will be ignored during parsing).
-    childToCheck = contentElement.childNodes.item(1);
-  }
-
-  return (
-    childToCheck instanceof HTMLElement &&
-    (childToCheck.tagName === "UL" || childToCheck.tagName === "OL")
-  );
 }
 
 /**
@@ -178,7 +165,7 @@ export function flatListTypeInputRule(config: {
           return null;
         }
         // Preserve indent.
-        indent = curNode.attrs["indent"] ?? 0;
+        indent = getIndent(curNode);
       }
 
       let checked: boolean | undefined = undefined;
@@ -188,7 +175,10 @@ export function flatListTypeInputRule(config: {
 
       state.tr
         .delete(range.from, range.to)
-        .setBlockType(range.from, range.from, config.type, { indent, checked });
+        .setBlockType(range.from, range.from, config.type, {
+          indent: indentAttr(indent),
+          checked,
+        });
       return;
     },
   });

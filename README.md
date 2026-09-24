@@ -24,8 +24,10 @@ The library code is based on [prosemirror-flat-list](https://github.com/ocavue/p
 ### Install
 
 ```bash
-npm i tiptap-extension-flat-list
+pnpm i tiptap-extension-flat-list
 ```
+
+Note: `prosemirror-model` version 1.25.1 or greater is recommended; otherwise, nested HTML lists may not parse correctly. If you are using Tiptap v3, then our `@tiptap/pm` peer dependency ensures that.
 
 ### Tiptap Extensions
 
@@ -137,8 +139,8 @@ editor.commands.dedentFlatListItem(canConvert?: boolean)
 
 ## Developing
 
-- Install dependencies with `npm install`.
+- Install dependencies with `pnpm install`.
 - Run the demo (in demo/) with `npm start`.
-- Build with `npm run build`, or build in watch mode with `npm run watch`.
-- Lint and check format with `npm run test`.
-- Preview typedoc with `npm run docs`. (Open `docs/index.html` in a browser.)
+- Build with `pnpm run build`.
+- Check with `pnpm lint` and `pnpm test`.
+- Preview typedoc with `pnpm typedoc`.
