@@ -57,6 +57,16 @@ describe("Markdown", () => {
       ]);
     });
 
+    it("numbers ordered lists from 1, ignoring the start number", () => {
+      // Only lists that start from 1 are supported, matching the postprocessor.
+      editor = createMarkdownEditor("3. a\n4. b\n    7. c\n");
+      assert.deepEqual(summarize(editor), [
+        { type: "ordered", text: "a", indent: 0, counter: 1 },
+        { type: "ordered", text: "b", indent: 0, counter: 2 },
+        { type: "ordered", text: "c", indent: 1, counter: 1 },
+      ]);
+    });
+
     it("parses nested lists of mixed types as indents", () => {
       editor = createMarkdownEditor(
         "- a\n    1. b\n        - [x] c\n    1. d\n- e\n",

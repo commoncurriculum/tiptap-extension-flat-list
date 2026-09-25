@@ -119,14 +119,14 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
 
   // List token parsing priority: ordered > task > unordered.
   markdownTokenName: "list",
+
   parseMarkdown(token, helpers) {
     // Fall through to task or unordered list (if installed).
     if (!token.ordered) return [];
 
     const nodes: JSONContent[] = [];
-    // CommonMark: the first item's number starts the list and the rest are
-    // disregarded, so a list written as repeated "1." numbers 1, 2, 3.
-    let counter = Number(token.start) || 1;
+    // We only support lists that start from 1.
+    let counter = 1;
     for (const item of token.items ?? []) {
       nodes.push(
         helpers.createNode(
@@ -140,6 +140,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
     }
     return nodes;
   },
+
   renderMarkdown: renderFlatListMarkdown,
 
   addKeyboardShortcuts() {

@@ -102,8 +102,8 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
   // List token parsing priority: ordered > task > unordered.
   // So if you don't install the other extensions, all lists become unordered.
   markdownTokenName: "list",
+
   parseMarkdown(token, helpers) {
-    // Last in the "list" token priority order, so all remaining lists become unordered.
     const nodes: JSONContent[] = [];
     for (const item of token.items ?? []) {
       nodes.push(
@@ -117,6 +117,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
     }
     return nodes;
   },
+
   renderMarkdown: renderFlatListMarkdown,
 
   addKeyboardShortcuts() {

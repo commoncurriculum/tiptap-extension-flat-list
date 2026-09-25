@@ -158,6 +158,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
   // List token parsing priority: ordered > task > unordered.
   markdownTokenName: "list",
+
   parseMarkdown(token, helpers) {
     const items = token.items ?? [];
     // Fall through to unordered list (if installed).
@@ -191,6 +192,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
     flushOtherItems();
     return nodes;
   },
+
   renderMarkdown: renderFlatListMarkdown,
 
   addNodeView() {

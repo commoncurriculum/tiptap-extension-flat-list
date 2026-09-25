@@ -69,6 +69,15 @@ describe("normal HTML lists", () => {
       assert.deepStrictEqual(summarize(editor), parsed);
     });
 
+    it("numbers from 1, ignoring the OL start attribute", () => {
+      // Only lists that start from 1 are supported, matching the postprocessor.
+      editor = createEditor(`<ol start="3"><li>one</li><li>two</li></ol>`);
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "ordered", text: "one", indent: 0, counter: 1 },
+        { type: "ordered", text: "two", indent: 0, counter: 2 },
+      ]);
+    });
+
     it("handles a list type change at the same nesting level", () => {
       editor = createEditor(
         `<ol><li>one<ul><li>bullet</li></ul></li><li>two</li></ol>`,
