@@ -1,13 +1,18 @@
-import { Node } from "@tiptap/core";
+import { Node, type JSONContent, type MarkdownToken } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { taskNodeName } from "./internal/extension-names";
 import {
+  parseItemContent,
+  parseNestedLists,
+  renderFlatListMarkdown,
+} from "./internal/markdown";
+import {
   computeChecked,
   computeIndent,
-  getIndent,
-  indentAttr,
   flatListTypeInputRule,
   getContentElement,
+  getIndent,
+  indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -150,6 +155,45 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
       ],
     ];
   },
+
+  // List token parsing priority: ordered > task > unordered.
+  markdownTokenName: "list",
+
+  parseMarkdown(token, helpers) {
+    const items = token.items ?? [];
+    // Fall through to unordered list (if installed).
+    if (!items.some((item) => item.task)) return [];
+
+    // Markdown marks tasks per item, so claim only the task items and re-dispatch runs
+    // of other items as their own list tokens.
+    const nodes: JSONContent[] = [];
+    let otherItems: MarkdownToken[] = [];
+    const flushOtherItems = () => {
+      if (otherItems.length === 0) return;
+      nodes.push(...helpers.parseChildren([{ ...token, items: otherItems }]));
+      otherItems = [];
+    };
+
+    for (const item of items) {
+      if (!item.task) {
+        otherItems.push(item);
+        continue;
+      }
+      flushOtherItems();
+      nodes.push(
+        helpers.createNode(
+          taskNodeName,
+          { checked: item.checked === true },
+          parseItemContent(item, helpers),
+        ),
+      );
+      nodes.push(...parseNestedLists(item, helpers));
+    }
+    flushOtherItems();
+    return nodes;
+  },
+
+  renderMarkdown: renderFlatListMarkdown,
 
   addNodeView() {
     // Return a NodeView (custom renderer) so that we can receive events from the checkbox.

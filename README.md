@@ -27,8 +27,6 @@ The library code is based on [prosemirror-flat-list](https://github.com/ocavue/p
 pnpm i tiptap-extension-flat-list
 ```
 
-Note: `prosemirror-model` version 1.25.1 or greater is recommended; otherwise, nested HTML lists may not parse correctly. If you are using Tiptap v3, then our `@tiptap/pm` peer dependency ensures that.
-
 ### Tiptap Extensions
 
 - `FlatListCore` (required): Core functionality required by the other extensions.

@@ -75,6 +75,16 @@ describe("postprocessor plugin", () => {
       ]);
     });
 
+    it("resets a counter that doesn't start from 1", () => {
+      setupList(2);
+      setCursorIn(editor, 0);
+      editor.commands.updateAttributes("flatListItemOrdered", { counter: 3 });
+      assert.deepStrictEqual(summarize(editor), [
+        { type: "ordered", text: "a", indent: 0, counter: 1 },
+        { type: "ordered", text: "b", indent: 0, counter: 2 },
+      ]);
+    });
+
     it("restarts the counter after a non-list block", () => {
       setupList(3);
       setCursorIn(editor, 1);

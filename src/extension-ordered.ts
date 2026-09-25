@@ -1,10 +1,15 @@
-import { Node } from "@tiptap/core";
+import { Node, type JSONContent } from "@tiptap/core";
 import { orderedNodeName } from "./internal/extension-names";
 import {
+  parseItemContent,
+  parseNestedLists,
+  renderFlatListMarkdown,
+} from "./internal/markdown";
+import {
   computeIndent,
+  flatListTypeInputRule,
   getIndent,
   indentAttr,
-  flatListTypeInputRule,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -111,6 +116,32 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
       ],
     ];
   },
+
+  // List token parsing priority: ordered > task > unordered.
+  markdownTokenName: "list",
+
+  parseMarkdown(token, helpers) {
+    // Fall through to task or unordered list (if installed).
+    if (!token.ordered) return [];
+
+    const nodes: JSONContent[] = [];
+    // We only support lists that start from 1.
+    let counter = 1;
+    for (const item of token.items ?? []) {
+      nodes.push(
+        helpers.createNode(
+          orderedNodeName,
+          { counter },
+          parseItemContent(item, helpers),
+        ),
+      );
+      counter++;
+      nodes.push(...parseNestedLists(item, helpers));
+    }
+    return nodes;
+  },
+
+  renderMarkdown: renderFlatListMarkdown,
 
   addKeyboardShortcuts() {
     return {
