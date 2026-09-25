@@ -237,8 +237,8 @@ function getElementListType(element: Element): FlatListType | null {
   if (element.tagName === "OL") return "flatListItemOrdered";
   else if (element.tagName === "UL") {
     const attrTaskList = element.getAttribute("data-task-list");
-    if (attrTaskList === "" || attrTaskList === "true")
+    if (attrTaskList === "" || attrTaskList === "true") {
       return "flatListItemTask";
-    else return "flatListItemUnordered";
+    } else return "flatListItemUnordered";
   } else return null;
 }
