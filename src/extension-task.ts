@@ -6,9 +6,9 @@ import {
   renderFlatListMarkdown,
 } from "./internal/markdown";
 import {
-  computeChecked,
   computeIndent,
   flatListTypeInputRule,
+  getBooleanAttribute,
   getContentElement,
   getIndent,
   indentAttr,
@@ -84,12 +84,10 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           // Since there is not standard HTML for task lists, we only look for task lists rendered by ourselves.
           // These are marked with data-task-list on the wrapping UL.
           if (element.parentElement) {
-            const attrTaskList =
-              element.parentElement.getAttribute("data-task-list");
-            if (attrTaskList === "" || attrTaskList === "true") {
+            if (getBooleanAttribute(element.parentElement, "data-task-list")) {
               return {
                 indent: indentAttr(computeIndent(element)),
-                checked: computeChecked(element),
+                checked: getBooleanAttribute(element, "data-checked"),
               };
             }
           }
@@ -127,7 +125,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           // For computeIndent and joinListElements.
           // Omitted when 0 (both treat a missing attr as 0).
           "data-list-indent": getIndent(node) || null,
-          // For computeChecked.
+          // For computing `checked`.
           "data-checked": node.attrs.checked ? "" : null,
           style: "position: relative;",
         },
@@ -217,7 +215,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
       const li = document.createElement("li");
       li.setAttribute("data-list-indent", String(getIndent(node)));
-      li.setAttribute("data-checked", node.attrs.checked);
+      li.setAttribute("data-checked", node.attrs.checked ? "" : "false");
       li.style.cssText = "position: relative;";
       // Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
       //   listItem.setAttribute(key, value)

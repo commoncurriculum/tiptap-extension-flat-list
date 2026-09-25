@@ -47,10 +47,13 @@ export function computeIndent(element: HTMLElement) {
   return Math.max(count, 0);
 }
 
-export function computeChecked(element: HTMLElement) {
+export function getBooleanAttribute(
+  element: Element,
+  attribute: string,
+): boolean {
   return (
-    element.hasAttribute("data-checked") &&
-    element.getAttribute("data-checked") !== "false"
+    element.hasAttribute(attribute) &&
+    element.getAttribute(attribute) !== "false"
   );
 }
 
