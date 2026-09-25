@@ -2,15 +2,18 @@ import { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
 import { orderedNodeName } from "./extension-names";
-import { getIndent } from "./utils";
-
-// TODO: In case collaboration leads to invalid indent states,
-// also loop over indent levels in this plugin.
+import { getIndent, indentAttr } from "./utils";
 
 /**
  * ProseMirror plugin that post-processes flat list items after any changes to the document.
  *
- * Sets `counter` attribute on each FlatListOrdered node.
+ * 1. Sets the `counter` attribute on each FlatListOrdered node.
+ * 2. Repairs indents so that each item is at most one deeper than the previous item.
+ * (Our commands guarantee this already, but other changes might not - in particular, collaborative edits.)
+ * Specifically, we act as if the previous item used to be the item's parent
+ * but was dedented by itself. We repair that by doing the rest of
+ * dedentFlatListItem: dedent the item, its "siblings", and their
+ * "descendants" by the same amount.
  */
 export function flatListPostprocessorPlugin() {
   return new Plugin({
@@ -21,42 +24,78 @@ export function flatListPostprocessorPlugin() {
       let tr = newState.tr;
       let updated = false;
 
-      // Store the last counter values for each parent node and indent level.
-      const lastCounters = new Map<PMNode | null, number[]>();
+      // State for the current run of list items within each parent node.
+      const parentStates = new Map<
+        PMNode | null,
+        {
+          // The last counter value for each indent level.
+          lastCounters: number[];
+          // The "ancestors" of the current list item (by original indent),
+          // ending with the previous list item.
+          // Original indents are strictly increasing, and so are repaired indents.
+          ancestors: { oldIndent: number; newIndent: number }[];
+        }
+      >();
 
       newState.doc.descendants((node, pos, parent) => {
         if (isFlatListNode(node)) {
-          let parentLastCounters = lastCounters.get(parent);
-          if (!parentLastCounters) {
-            parentLastCounters = [];
-            lastCounters.set(parent, parentLastCounters);
+          let parentState = parentStates.get(parent);
+          if (!parentState) {
+            parentState = { lastCounters: [], ancestors: [] };
+            parentStates.set(parent, parentState);
           }
+          const { lastCounters, ancestors } = parentState;
 
-          let nodeAttrs = node.attrs;
+          const oldAttrs = node.attrs;
+          let nodeAttrs = oldAttrs;
 
           // Indents.
-          const indent = getIndent(node);
+          const oldIndent = getIndent(node);
+          // At most one deeper than the previous item (-1 if none).
+          const maxIndent = (ancestors.at(-1)?.newIndent ?? -1) + 1;
+          // Pop items that are not our ancestors or previous sibling.
+          while (
+            ancestors.length > 0 &&
+            ancestors.at(-1)!.oldIndent > oldIndent
+          ) {
+            ancestors.pop();
+          }
+          // Shift by the same amount as our parent or previous sibling.
+          const top = ancestors.at(-1);
+          const shift = top ? top.oldIndent - top.newIndent : 0;
+          const indent = Math.max(0, Math.min(oldIndent - shift, maxIndent));
+          if (top && top.oldIndent === oldIndent) ancestors.pop();
+          ancestors.push({ oldIndent, newIndent: indent });
+
+          if (indent !== oldIndent) {
+            nodeAttrs = { ...nodeAttrs, indent: indentAttr(indent) };
+          }
+
+          // Counters.
           if (node.type.name === orderedNodeName) {
-            const counterValue = (parentLastCounters[indent] ?? 0) + 1;
+            const counterValue = (lastCounters[indent] ?? 0) + 1;
 
             // If the node’s current counter attribute doesn't match the computed value, update it.
             if (nodeAttrs.counter !== counterValue) {
               nodeAttrs = { ...nodeAttrs, counter: counterValue };
-              tr = tr.setNodeMarkup(pos, undefined, nodeAttrs);
-              updated = true;
             }
 
             // Update the counter value for this indent level.
-            parentLastCounters[indent] = counterValue;
+            lastCounters[indent] = counterValue;
             // Reset the counter value for higher indent levels.
-            parentLastCounters.length = indent + 1;
+            lastCounters.length = indent + 1;
           } else {
             // Non-ordered list block. Reset the counter value for this and higher indent levels.
-            parentLastCounters.length = indent;
+            lastCounters.length = indent;
+          }
+
+          if (nodeAttrs !== oldAttrs) {
+            tr = tr.setNodeMarkup(pos, undefined, nodeAttrs);
+            updated = true;
           }
         } else {
-          // Not a list block. Reset all counters.
-          lastCounters.delete(parent);
+          // Not a list block. Reset all counters and the indent limit.
+          parentStates.delete(parent);
         }
 
         // Recurse into nodes that could have flat-list-item descendants.

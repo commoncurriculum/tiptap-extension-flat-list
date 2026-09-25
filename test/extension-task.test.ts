@@ -1,6 +1,8 @@
 import type { Editor } from "@tiptap/core";
-import { DOMSerializer } from "@tiptap/pm/model";
+import { DOMSerializer, Fragment } from "@tiptap/pm/model";
 import { assert } from "chai";
+import { taskNodeName } from "../src/internal/extension-names";
+import { indentAttr } from "../src/internal/utils";
 import { createEditor } from "./helpers";
 
 /**
@@ -18,15 +20,17 @@ describe("FlatListTask renderHTML", () => {
     indent?: number;
     checked?: boolean;
   }): HTMLElement {
-    editor = createEditor("<p>Buy milk</p>");
-    editor.commands.selectAll();
-    editor.commands.setFlatListItem("task", attrs);
+    editor = createEditor();
+    // Create the node directly instead of putting it in the doc, since the postprocessor
+    // would clamp a lone item's indent to 0.
+    const node = editor.schema.nodes[taskNodeName].create(
+      { ...attrs, indent: indentAttr(attrs.indent ?? 0) },
+      editor.schema.text("Buy milk"),
+    );
 
     const serializer = DOMSerializer.fromSchema(editor.schema);
     const container = document.createElement("div");
-    container.appendChild(
-      serializer.serializeFragment(editor.state.doc.content),
-    );
+    container.appendChild(serializer.serializeFragment(Fragment.from(node)));
     return container.firstElementChild as HTMLElement;
   }
 
