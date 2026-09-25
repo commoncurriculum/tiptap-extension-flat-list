@@ -10,8 +10,8 @@ import { getIndent, indentAttr } from "./utils";
  * 1. Sets the `counter` attribute on each FlatListOrdered node.
  * 2. Repairs indents so that each item is at most one deeper than the previous item.
  * (Our commands guarantee this already, but other changes might not - in particular, collaborative edits.)
- * Specifically, we act as if the previous item used to be the item's parent
- * but was dedented by itself. We repair that by doing the rest of
+ * Specifically, we act as if the previous item used to be the item's "parent"
+ * (in the flat list) but was dedented by itself. We repair that by doing the rest of
  * dedentFlatListItem: dedent the item, its "siblings", and their
  * "descendants" by the same amount.
  */
@@ -24,15 +24,14 @@ export function flatListPostprocessorPlugin() {
       let tr = newState.tr;
       let updated = false;
 
-      // State for the current run of list items within each parent node.
+      // State for the current run of list items within each actual parent node.
       const parentStates = new Map<
         PMNode | null,
         {
-          // The last counter value for each indent level.
+          // Maps indent level -> last counter value.
           lastCounters: number[];
-          // The "ancestors" of the current list item (by original indent),
-          // ending with the previous list item.
-          // Original indents are strictly increasing, and so are repaired indents.
+          // Stack of indent levels for the current item's "ancestors" (in the flat list)
+          // plus its previous "sibling" if applicable.
           ancestors: { oldIndent: number; newIndent: number }[];
         }
       >();
@@ -49,7 +48,8 @@ export function flatListPostprocessorPlugin() {
           const oldAttrs = node.attrs;
           let nodeAttrs = oldAttrs;
 
-          // Indents.
+          // 1. Indents
+
           const oldIndent = getIndent(node);
           // At most one deeper than the previous item (-1 if none).
           const maxIndent = (ancestors.at(-1)?.newIndent ?? -1) + 1;
@@ -64,15 +64,21 @@ export function flatListPostprocessorPlugin() {
           const top = ancestors.at(-1);
           const shift = top ? top.oldIndent - top.newIndent : 0;
           const indent = Math.max(0, Math.min(oldIndent - shift, maxIndent));
-          if (top && top.oldIndent === oldIndent) ancestors.pop();
+          // Store our indent for future nodes.
+          if (top && top.oldIndent === oldIndent) {
+            // Replace our previous sibling.
+            ancestors.pop();
+          }
           ancestors.push({ oldIndent, newIndent: indent });
 
           if (indent !== oldIndent) {
             nodeAttrs = { ...nodeAttrs, indent: indentAttr(indent) };
           }
 
-          // Counters.
+          // 2. Counters
+
           if (node.type.name === orderedNodeName) {
+            // indent is the *new* indent computed above.
             const counterValue = (lastCounters[indent] ?? 0) + 1;
 
             // If the node’s current counter attribute doesn't match the computed value, update it.
@@ -94,7 +100,7 @@ export function flatListPostprocessorPlugin() {
             updated = true;
           }
         } else {
-          // Not a list block. Reset all counters and the indent limit.
+          // Not a list block. Reset all counters and indents.
           parentStates.delete(parent);
         }
 
