@@ -1,6 +1,6 @@
 import { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { isFlatListType } from "../list-type";
+import { isFlatListNode } from "../list-type";
 import { getIndent, indentAttr } from "./utils";
 
 /**
@@ -36,7 +36,7 @@ export function flatListPostprocessorPlugin() {
       >();
 
       newState.doc.descendants((node, pos, parent) => {
-        if (isFlatListType(node.type.name)) {
+        if (isFlatListNode(node)) {
           let parentState = parentStates.get(parent);
           if (!parentState) {
             parentState = { lastCounters: [], ancestors: [] };

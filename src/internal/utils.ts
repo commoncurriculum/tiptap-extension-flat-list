@@ -1,6 +1,6 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
 import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { FlatListType, isFlatListType } from "../list-type";
+import { FlatListType, isFlatListNode } from "../list-type";
 
 /**
  * Returns a flat list node's indent level.
@@ -161,7 +161,7 @@ export function flatListTypeInputRule(config: {
 
       let indent = 0;
       const curNode = $start.node($start.depth);
-      if (isFlatListType(curNode.type.name)) {
+      if (isFlatListNode(curNode)) {
         // Already a list node.
         if (curNode.type === config.type) {
           // Already the intended type. Don't disappear the input.

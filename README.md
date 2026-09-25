@@ -82,7 +82,7 @@ console.log(JoinListDOMSerializer.getHTML(editor));
 
 ### Commands
 
-Note `type FlatListType = "flatListItemOrdered" | "flatListItemUnordered" | "flatListItemTask"` (the flat list extensions' node names).
+Note `type FlatListType = "flatListItemOrdered" | "flatListItemTask" | "flatListItemUnordered"` (the flat list extensions' node names).
 
 #### setFlatListItem
 
