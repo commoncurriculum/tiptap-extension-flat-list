@@ -1,11 +1,10 @@
 import { Editor, Extension, getNodeType, isNodeActive } from "@tiptap/core";
 import { setBlockType } from "@tiptap/pm/commands";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { taskNodeName } from "./internal/extension-names";
 import { flatListPastePlugin } from "./internal/paste-plugin";
 import { flatListPostprocessorPlugin } from "./internal/postprocessor-plugin";
 import { getIndent, indentAttr } from "./internal/utils";
-import { getFlatListNodeName, isFlatListNode, ListType } from "./list-type";
+import { FlatListType, isFlatListType } from "./list-type";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list
 // and https://github.com/ueberdosis/tiptap/blob/main/packages/extension-heading/src/heading.ts
@@ -17,14 +16,14 @@ declare module "@tiptap/core" {
        * Sets a flat list item node.
        *
        * If `attributes.indent` is not provided and any selected nodes are already flat list nodes
-       * (possibly a different ListType), their indent is preserved.
+       * (possibly a different list type), their indent is preserved.
        *
-       * @param listType The list type: "ordered" | "unordered" | "task"
+       * @param listType The flat list node type: "flatListItemOrdered" | "flatListItemUnordered" | "flatListItemTask"
        * @param attributes The node attributes
-       * @example editor.commands.setFlatList("unordered", { indent: 1 })
+       * @example editor.commands.setFlatList("flatListItemUnordered", { indent: 1 })
        */
       setFlatListItem: (
-        listType: ListType,
+        listType: FlatListType,
         attributes?: { indent?: number; checked?: boolean },
       ) => ReturnType;
       /**
@@ -32,14 +31,14 @@ declare module "@tiptap/core" {
        *
        * When toggling on,
        * if `attributes.indent` is not provided and any selected nodes are already flat list nodes
-       * (possibly a different ListType), their indent is preserved.
+       * (possibly a different list type), their indent is preserved.
        *
-       * @param listType The list type: "ordered" | "unordered" | "task"
+       * @param listType The flat list node type: "flatListItemOrdered" | "flatListItemUnordered" | "flatListItemTask"
        * @param attributes The node attributes
-       * @example editor.commands.toggleFlatList("ordered")
+       * @example editor.commands.toggleFlatList("flatListItemOrdered")
        */
       toggleFlatListItem: (
-        listType: ListType,
+        listType: FlatListType,
         attributes?: { indent?: number; checked?: boolean },
       ) => ReturnType;
       /**
@@ -79,11 +78,11 @@ export const FlatListCore = Extension.create({
         // (not editor.commands), or return false if this command is not applicable.
         // See https://tiptap.dev/docs/editor/extensions/custom-extensions/extend-existing#commands
         ({ state, dispatch, chain }) => {
-          // Copy of commands.setNode(getFlatListNodeName(listType), attributes)
+          // Copy of commands.setNode(listType, attributes)
           // except we pass attrsFn to setBlockType instead of attributes.
 
           const attrsFn = (oldNode: ProseMirrorNode): Record<string, any> => {
-            if (isFlatListNode(oldNode)) {
+            if (isFlatListType(oldNode.type.name)) {
               const newAttrs = {
                 ...attributes,
                 indent: indentAttr(attributes.indent),
@@ -93,8 +92,8 @@ export const FlatListCore = Extension.create({
                 newAttrs.indent = oldNode.attrs.indent;
               }
               if (
-                listType === "task" &&
-                oldNode.type.name === taskNodeName &&
+                listType === "flatListItemTask" &&
+                oldNode.type.name === "flatListItemTask" &&
                 attributes.checked === undefined
               ) {
                 // Preserve checked.
@@ -105,7 +104,7 @@ export const FlatListCore = Extension.create({
               return { ...attributes, indent: indentAttr(attributes.indent) };
           };
 
-          const type = getNodeType(getFlatListNodeName(listType), state.schema);
+          const type = getNodeType(listType, state.schema);
 
           if (!type.isTextblock) {
             console.warn(
@@ -134,10 +133,10 @@ export const FlatListCore = Extension.create({
       toggleFlatListItem:
         (listType, attributes) =>
         ({ state, commands }) => {
-          // Copy of commands.toggleNode(getFlatListNodeName(listType), "paragraph", attributes)
+          // Copy of commands.toggleNode(listType, "paragraph", attributes)
           // except we change the last line from setNode to setFlatListItem.
 
-          const type = getNodeType(getFlatListNodeName(listType), state.schema);
+          const type = getNodeType(listType, state.schema);
           const toggleType = getNodeType("paragraph", state.schema);
           const isActive = isNodeActive(state, type, attributes);
 
@@ -171,7 +170,7 @@ export const FlatListCore = Extension.create({
               $to: { pos: to },
             } = range;
             state.doc.nodesBetween(from, to, (node, pos) => {
-              if (isFlatListNode(node)) {
+              if (isFlatListType(node.type.name)) {
                 const newIndent = getIndent(node) + 1;
                 // Only indent if it's at most one more than the previous list item
                 // (accounting for tr's prior changes).
@@ -180,7 +179,7 @@ export const FlatListCore = Extension.create({
                   resolvedInTr.parentOffset,
                 ).node;
                 const prevSiblingIndent =
-                  prevSiblingInTr && isFlatListNode(prevSiblingInTr)
+                  prevSiblingInTr && isFlatListType(prevSiblingInTr.type.name)
                     ? getIndent(prevSiblingInTr)
                     : -1;
                 if (newIndent <= prevSiblingIndent + 1) {
@@ -212,7 +211,7 @@ export const FlatListCore = Extension.create({
               $to: { pos: to },
             } = range;
             state.doc.nodesBetween(from, to, (node, pos) => {
-              if (isFlatListNode(node)) {
+              if (isFlatListType(node.type.name)) {
                 const indent = getIndent(node);
                 if (indent > 0) {
                   applicable = true;
@@ -241,7 +240,7 @@ export const FlatListCore = Extension.create({
             index++
           ) {
             const subsequentItem = $lastDedented.parent.child(index);
-            if (!isFlatListNode(subsequentItem)) break;
+            if (!isFlatListType(subsequentItem.type.name)) break;
             const indent = getIndent(subsequentItem);
             if (indent <= lastDedented!.oldIndent) break;
 
@@ -285,7 +284,7 @@ function handleEnter(editor: Editor): boolean {
   const parentContentSize = $to.parent.nodeSize - 2;
 
   if (from !== to) return false;
-  if (!isFlatListNode($to.parent)) return false;
+  if (!isFlatListType($to.parent.type.name)) return false;
   if (!($to.parentOffset === 0 || $to.parentOffset === parentContentSize))
     return false;
 
@@ -339,7 +338,7 @@ function handleBackspace1(editor: Editor): boolean {
   const { $to, from, to } = editor.state.selection;
 
   if (from !== to) return false;
-  if (!isFlatListNode($to.parent)) return false;
+  if (!isFlatListType($to.parent.type.name)) return false;
   if ($to.parentOffset !== 0) return false;
 
   // Cursor at the start of a flat list item.
@@ -363,7 +362,7 @@ function handleBackspace2(editor: Editor): boolean {
   if (indexInGrandparent === 0) return false;
   const grandparent = $to.node(-1);
   const prevNode = grandparent.child(indexInGrandparent - 1);
-  if (!isFlatListNode(prevNode)) return false;
+  if (!isFlatListType(prevNode.type.name)) return false;
   if (prevNode.content.size !== 0) return false;
 
   // Cursor at the start of a node after an empty flat list item.
@@ -383,7 +382,7 @@ function handleDelete(editor: Editor): boolean {
   const parentContentSize = $to.parent.nodeSize - 2;
 
   if (from !== to) return false;
-  if (!isFlatListNode($to.parent)) return false;
+  if (!isFlatListType($to.parent.type.name)) return false;
   if (parentContentSize !== 0) return false;
 
   const indexInGrandparent = $to.index(-1);

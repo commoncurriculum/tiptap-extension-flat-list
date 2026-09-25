@@ -8,7 +8,7 @@ import {
   Schema,
 } from "@tiptap/pm/model";
 import { getContentElement, parseIntegerAttr } from "./internal/utils";
-import { ListType } from "./list-type";
+import { FlatListType } from "./list-type";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list/blob/master/packages/core/src/utils/list-serializer.ts
 
@@ -231,13 +231,14 @@ function joinListElements(
 }
 
 /**
- * Given a candidate flat-list wrapper OL/UL, return its ListType, or null if it is not one.
+ * Given a candidate flat-list wrapper OL/UL, return its FlatListType, or null if it is not one.
  */
-function getElementListType(element: Element): ListType | null {
-  if (element.tagName === "OL") return "ordered";
+function getElementListType(element: Element): FlatListType | null {
+  if (element.tagName === "OL") return "flatListItemOrdered";
   else if (element.tagName === "UL") {
     const attrTaskList = element.getAttribute("data-task-list");
-    if (attrTaskList === "" || attrTaskList === "true") return "task";
-    else return "unordered";
+    if (attrTaskList === "" || attrTaskList === "true")
+      return "flatListItemTask";
+    else return "flatListItemUnordered";
   } else return null;
 }

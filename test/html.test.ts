@@ -41,11 +41,11 @@ describe("normal HTML lists", () => {
         `<ul><li>one<ul><li>one-a</li><li>one-b<ul><li>one-b-i</li></ul></li></ul></li><li>two</li></ul>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "one", indent: 0 },
-        { type: "unordered", text: "one-a", indent: 1 },
-        { type: "unordered", text: "one-b", indent: 1 },
-        { type: "unordered", text: "one-b-i", indent: 2 },
-        { type: "unordered", text: "two", indent: 0 },
+        { type: "flatListItemUnordered", text: "one", indent: 0 },
+        { type: "flatListItemUnordered", text: "one-a", indent: 1 },
+        { type: "flatListItemUnordered", text: "one-b", indent: 1 },
+        { type: "flatListItemUnordered", text: "one-b-i", indent: 2 },
+        { type: "flatListItemUnordered", text: "two", indent: 0 },
       ]);
     });
 
@@ -56,11 +56,11 @@ describe("normal HTML lists", () => {
         `<ol><li>one</li><li>two<ol><li>two-a</li><li>two-b</li></ol></li><li>three</li></ol>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "ordered", text: "one", indent: 0, counter: 1 },
-        { type: "ordered", text: "two", indent: 0, counter: 2 },
-        { type: "ordered", text: "two-a", indent: 1, counter: 1 },
-        { type: "ordered", text: "two-b", indent: 1, counter: 2 },
-        { type: "ordered", text: "three", indent: 0, counter: 3 },
+        { type: "flatListItemOrdered", text: "one", indent: 0, counter: 1 },
+        { type: "flatListItemOrdered", text: "two", indent: 0, counter: 2 },
+        { type: "flatListItemOrdered", text: "two-a", indent: 1, counter: 1 },
+        { type: "flatListItemOrdered", text: "two-b", indent: 1, counter: 2 },
+        { type: "flatListItemOrdered", text: "three", indent: 0, counter: 3 },
       ]);
 
       // ...and the postprocessor agrees, so nothing changes once it runs.
@@ -73,8 +73,8 @@ describe("normal HTML lists", () => {
       // Only lists that start from 1 are supported, matching the postprocessor.
       editor = createEditor(`<ol start="3"><li>one</li><li>two</li></ol>`);
       assert.deepStrictEqual(summarize(editor), [
-        { type: "ordered", text: "one", indent: 0, counter: 1 },
-        { type: "ordered", text: "two", indent: 0, counter: 2 },
+        { type: "flatListItemOrdered", text: "one", indent: 0, counter: 1 },
+        { type: "flatListItemOrdered", text: "two", indent: 0, counter: 2 },
       ]);
     });
 
@@ -83,9 +83,9 @@ describe("normal HTML lists", () => {
         `<ol><li>one<ul><li>bullet</li></ul></li><li>two</li></ol>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "ordered", text: "one", indent: 0, counter: 1 },
-        { type: "unordered", text: "bullet", indent: 1 },
-        { type: "ordered", text: "two", indent: 0, counter: 2 },
+        { type: "flatListItemOrdered", text: "one", indent: 0, counter: 1 },
+        { type: "flatListItemUnordered", text: "bullet", indent: 1 },
+        { type: "flatListItemOrdered", text: "two", indent: 0, counter: 2 },
       ]);
     });
 
@@ -94,16 +94,16 @@ describe("normal HTML lists", () => {
         `<ul data-task-list=""><li data-checked=""><div>done</div></li><li><div>todo</div></li></ul>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "task", text: "done", indent: 0, checked: true },
-        { type: "task", text: "todo", indent: 0, checked: false },
+        { type: "flatListItemTask", text: "done", indent: 0, checked: true },
+        { type: "flatListItemTask", text: "todo", indent: 0, checked: false },
       ]);
     });
 
     it("replaces paragraphs inside an LI with its content", () => {
       editor = createEditor(`<ul><li><p>one</p></li><li><p>two</p></li></ul>`);
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "one", indent: 0 },
-        { type: "unordered", text: "two", indent: 0 },
+        { type: "flatListItemUnordered", text: "one", indent: 0 },
+        { type: "flatListItemUnordered", text: "two", indent: 0 },
       ]);
     });
 
@@ -126,9 +126,9 @@ describe("normal HTML lists", () => {
         `<ul><li><ul><li>nested</li></ul></li><li>second</li></ul>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "", indent: 0 },
-        { type: "unordered", text: "nested", indent: 1 },
-        { type: "unordered", text: "second", indent: 0 },
+        { type: "flatListItemUnordered", text: "", indent: 0 },
+        { type: "flatListItemUnordered", text: "nested", indent: 1 },
+        { type: "flatListItemUnordered", text: "second", indent: 0 },
       ]);
     });
 
@@ -137,9 +137,9 @@ describe("normal HTML lists", () => {
         `<ol><li><ol><li>nested</li></ol></li><li>second</li></ol>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "ordered", text: "", indent: 0, counter: 1 },
-        { type: "ordered", text: "nested", indent: 1, counter: 1 },
-        { type: "ordered", text: "second", indent: 0, counter: 2 },
+        { type: "flatListItemOrdered", text: "", indent: 0, counter: 1 },
+        { type: "flatListItemOrdered", text: "nested", indent: 1, counter: 1 },
+        { type: "flatListItemOrdered", text: "second", indent: 0, counter: 2 },
       ]);
     });
 
@@ -151,8 +151,8 @@ describe("normal HTML lists", () => {
         </li>
       </ul>`);
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "", indent: 0 },
-        { type: "unordered", text: "nested", indent: 1 },
+        { type: "flatListItemUnordered", text: "", indent: 0 },
+        { type: "flatListItemUnordered", text: "nested", indent: 1 },
       ]);
     });
 
@@ -162,8 +162,8 @@ describe("normal HTML lists", () => {
       assert.strictEqual(first.childCount, 1);
       assert.strictEqual(first.child(0).type.name, "hardBreak");
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "", indent: 0 },
-        { type: "unordered", text: "nested", indent: 1 },
+        { type: "flatListItemUnordered", text: "", indent: 0 },
+        { type: "flatListItemUnordered", text: "nested", indent: 1 },
       ]);
     });
 
@@ -172,9 +172,9 @@ describe("normal HTML lists", () => {
         `<ul><li><ul><li><ul><li>deep</li></ul></li></ul></li></ul>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "unordered", text: "", indent: 0 },
-        { type: "unordered", text: "", indent: 1 },
-        { type: "unordered", text: "deep", indent: 2 },
+        { type: "flatListItemUnordered", text: "", indent: 0 },
+        { type: "flatListItemUnordered", text: "", indent: 1 },
+        { type: "flatListItemUnordered", text: "deep", indent: 2 },
       ]);
     });
 
@@ -183,8 +183,8 @@ describe("normal HTML lists", () => {
         `<ul data-task-list=""><li data-checked=""><div><ul data-task-list=""><li><div>nested</div></li></ul></div></li></ul>`,
       );
       assert.deepStrictEqual(summarize(editor), [
-        { type: "task", text: "", indent: 0, checked: true },
-        { type: "task", text: "nested", indent: 1, checked: false },
+        { type: "flatListItemTask", text: "", indent: 0, checked: true },
+        { type: "flatListItemTask", text: "nested", indent: 1, checked: false },
       ]);
     });
 
@@ -198,9 +198,9 @@ describe("normal HTML lists", () => {
       );
       assert.deepStrictEqual(summarize(editor), [
         { type: "paragraph", text: "intro" },
-        { type: "unordered", text: "", indent: 0 },
-        { type: "unordered", text: "nested", indent: 1 },
-        { type: "unordered", text: "second", indent: 0 },
+        { type: "flatListItemUnordered", text: "", indent: 0 },
+        { type: "flatListItemUnordered", text: "nested", indent: 1 },
+        { type: "flatListItemUnordered", text: "second", indent: 0 },
       ]);
     });
   });
@@ -293,10 +293,10 @@ describe("normal HTML lists", () => {
       editor.commands.insertContent("three");
       editor.commands.dedentFlatListItem();
       assert.deepStrictEqual(summarize(editor), [
-        { type: "ordered", text: "one", indent: 0, counter: 1 },
-        { type: "ordered", text: "two", indent: 0, counter: 2 },
-        { type: "ordered", text: "two-a", indent: 1, counter: 1 },
-        { type: "ordered", text: "three", indent: 0, counter: 3 },
+        { type: "flatListItemOrdered", text: "one", indent: 0, counter: 1 },
+        { type: "flatListItemOrdered", text: "two", indent: 0, counter: 2 },
+        { type: "flatListItemOrdered", text: "two-a", indent: 1, counter: 1 },
+        { type: "flatListItemOrdered", text: "three", indent: 0, counter: 3 },
       ]);
 
       const html = JoinListDOMSerializer.getHTML(editor);

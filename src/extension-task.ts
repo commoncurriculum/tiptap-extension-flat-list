@@ -1,6 +1,5 @@
 import { Node, type JSONContent, type MarkdownToken } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { taskNodeName } from "./internal/extension-names";
 import {
   parseItemContent,
   parseNestedLists,
@@ -15,6 +14,9 @@ import {
   indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
+import type { FlatListType } from "./list-type";
+
+const NODE_NAME = "flatListItemTask" satisfies FlatListType;
 
 // Based on https://github.com/ueberdosis/tiptap/blob/main/packages/extension-task-item/src/task-item.ts
 // In particular, its custom NodeView.
@@ -40,7 +42,7 @@ export interface FlatListTaskOptions {
  * If you use this extension, you must also use the FlatListCore extension.
  */
 export const FlatListTask = Node.create<FlatListTaskOptions>({
-  name: taskNodeName,
+  name: NODE_NAME,
 
   group: "block",
 
@@ -95,7 +97,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
           return false;
         },
         contentElement: (element: HTMLElement) => {
-          const contentElement = getContentElement("task", element);
+          const contentElement = getContentElement(NODE_NAME, element);
           replaceParagraphsWithBreaks(contentElement);
           return contentElement;
         },
@@ -182,7 +184,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
       flushOtherItems();
       nodes.push(
         helpers.createNode(
-          taskNodeName,
+          NODE_NAME,
           { checked: item.checked === true },
           parseItemContent(item, helpers),
         ),
@@ -302,7 +304,7 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-9": () => this.editor.commands.toggleFlatListItem("task"),
+      "Mod-Shift-9": () => this.editor.commands.toggleFlatListItem(NODE_NAME),
     };
   },
 

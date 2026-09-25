@@ -1,5 +1,5 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { isFlatListNode } from "../list-type";
+import { isFlatListType } from "../list-type";
 import { getIndent, indentAttr } from "./utils";
 
 /**
@@ -20,7 +20,7 @@ export function flatListPastePlugin() {
         const $from = view.state.selection.$from;
         let contextIndent = 0;
         let lastIndent = -1;
-        if (isFlatListNode($from.parent)) {
+        if (isFlatListType($from.parent.type.name)) {
           contextIndent = getIndent($from.parent);
           lastIndent = getIndent($from.parent);
         }
@@ -30,7 +30,7 @@ export function flatListPastePlugin() {
         let delta: number | null = null;
         for (let i = 0; i < slice.content.childCount; i++) {
           const child = slice.content.child(i);
-          if (isFlatListNode(child)) {
+          if (isFlatListType(child.type.name)) {
             if (delta === null) {
               // Start a new list, with this node at indent = contextIndent.
               delta = contextIndent - getIndent(child);

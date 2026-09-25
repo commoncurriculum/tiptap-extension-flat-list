@@ -1,42 +1,18 @@
-import { Node } from "@tiptap/pm/model";
-import {
-  orderedNodeName,
-  taskNodeName,
-  unorderedNodeName,
-} from "./internal/extension-names";
-
-export type ListType = "ordered" | "unordered" | "task";
-
-export function isFlatListNode(node: Node): boolean {
-  return getListType(node) !== null;
-}
+/**
+ * The node type names of the flat list extensions.
+ */
+export type FlatListType =
+  "flatListItemOrdered" | "flatListItemUnordered" | "flatListItemTask";
 
 /**
- * If the given node is a flat list node, returns its ListType, else returns null.
+ * Returns whether the given node type name is a flat list node type.
  */
-export function getListType(node: Node): ListType | null {
-  switch (node.type.name) {
-    case orderedNodeName:
-      return "ordered";
-    case unorderedNodeName:
-      return "unordered";
-    case taskNodeName:
-      return "task";
-    default:
-      return null;
-  }
-}
-
-/**
- * Returns the node.type.name corresponding to a ListType.
- */
-export function getFlatListNodeName(listType: ListType) {
-  switch (listType) {
-    case "ordered":
-      return orderedNodeName;
-    case "unordered":
-      return unorderedNodeName;
-    case "task":
-      return taskNodeName;
-  }
+export function isFlatListType(type: string | undefined): type is FlatListType {
+  return (
+    [
+      "flatListItemOrdered",
+      "flatListItemUnordered",
+      "flatListItemTask",
+    ] as Array<string | undefined>
+  ).includes(type);
 }

@@ -14,7 +14,7 @@ import {
   FlatListUnordered,
   type FlatListTaskOptions,
 } from "../src/index";
-import { getListType } from "../src/list-type";
+import { isFlatListType, type FlatListType } from "../src/list-type";
 
 /**
  * Creates an Editor with all flat list extensions, attached to a fresh jsdom element.
@@ -44,10 +44,10 @@ export function createEditor(
 /**
  * A summary of a top-level block, convenient for assertions.
  *
- * Example: `{ type: "ordered", indent: 1, counter: 2, text: "foo" }`.
+ * Example: `{ type: "flatListItemOrdered", indent: 1, counter: 2, text: "foo" }`.
  */
 export interface BlockSummary {
-  type: "ordered" | "unordered" | "task" | "paragraph";
+  type: FlatListType | "paragraph";
   text: string;
   indent?: number;
   counter?: number;
@@ -57,8 +57,8 @@ export interface BlockSummary {
 export function summarizeDoc(doc: ProseMirrorNode): BlockSummary[] {
   const summaries: BlockSummary[] = [];
   doc.forEach((node) => {
-    const listType = getListType(node);
-    if (listType === null) {
+    const listType = node.type.name;
+    if (!isFlatListType(listType)) {
       summaries.push({ type: "paragraph", text: node.textContent });
     } else {
       const summary: BlockSummary = {
@@ -66,8 +66,10 @@ export function summarizeDoc(doc: ProseMirrorNode): BlockSummary[] {
         text: node.textContent,
         indent: node.attrs.indent ?? 0,
       };
-      if (listType === "ordered") summary.counter = node.attrs.counter;
-      if (listType === "task") summary.checked = !!node.attrs.checked;
+      if (listType === "flatListItemOrdered")
+        summary.counter = node.attrs.counter;
+      if (listType === "flatListItemTask")
+        summary.checked = !!node.attrs.checked;
       summaries.push(summary);
     }
   });

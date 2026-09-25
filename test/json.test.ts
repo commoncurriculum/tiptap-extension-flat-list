@@ -37,7 +37,7 @@ describe("JSON", () => {
   it("omits indent when set explicitly to 0", () => {
     editor = createEditor("<p>a</p>");
     editor.commands.selectAll();
-    editor.commands.setFlatListItem("ordered", { indent: 0 });
+    editor.commands.setFlatListItem("flatListItemOrdered", { indent: 0 });
     assert.notProperty(jsonAttrs(editor)[0], "indent");
   });
 

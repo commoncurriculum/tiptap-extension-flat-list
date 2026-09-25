@@ -1,7 +1,6 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
 import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { isFlatListNode, ListType } from "../list-type";
-import { taskNodeName } from "./extension-names";
+import { FlatListType, isFlatListType } from "../list-type";
 
 /**
  * Returns a flat list node's indent level.
@@ -69,11 +68,11 @@ export function parseIntegerAttr(attr: string | null): number | undefined {
  * else the LI itself. (Latter happens when it's copied content that got simplified by joinListElements.)
  */
 export function getContentElement(
-  listType: ListType,
+  listType: FlatListType,
   li: HTMLElement,
 ): HTMLElement {
   if (
-    listType === "task" &&
+    listType === "flatListItemTask" &&
     li.firstElementChild instanceof HTMLLabelElement &&
     li.lastElementChild instanceof HTMLElement
   ) {
@@ -162,7 +161,7 @@ export function flatListTypeInputRule(config: {
 
       let indent = 0;
       const curNode = $start.node($start.depth);
-      if (isFlatListNode(curNode)) {
+      if (isFlatListType(curNode.type.name)) {
         // Already a list node.
         if (curNode.type === config.type) {
           // Already the intended type. Don't disappear the input.
@@ -173,7 +172,7 @@ export function flatListTypeInputRule(config: {
       }
 
       let checked: boolean | undefined = undefined;
-      if (config.type.name === taskNodeName) {
+      if (config.type.name === "flatListItemTask") {
         checked = match[match.length - 1]?.toLowerCase() === "x";
       }
 
