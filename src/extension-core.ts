@@ -4,6 +4,7 @@ import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { flatListPastePlugin } from "./internal/paste-plugin";
 import { flatListPostprocessorPlugin } from "./internal/postprocessor-plugin";
 import { getIndent, indentAttr } from "./internal/utils";
+import { JoinListDOMSerializer } from "./join-list-dom-serializer";
 import { FlatListType, isFlatListNode } from "./list-type";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list
@@ -271,6 +272,11 @@ export const FlatListCore = Extension.create({
 
   addProseMirrorPlugins() {
     return [flatListPastePlugin(), flatListPostprocessorPlugin()];
+  },
+
+  onCreate() {
+    // Copy flat list items as joined & nested lists, wrapping any existing clipboardSerializer.
+    JoinListDOMSerializer.setClipboardSerializer(this.editor);
   },
 });
 
