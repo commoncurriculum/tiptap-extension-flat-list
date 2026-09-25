@@ -1,13 +1,14 @@
 import { Node } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { taskNodeName } from "./internal/extension-names";
+import { parseTaskMarkdown, renderFlatListMarkdown } from "./internal/markdown";
 import {
   computeChecked,
   computeIndent,
-  getIndent,
-  indentAttr,
   flatListTypeInputRule,
   getContentElement,
+  getIndent,
+  indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -150,6 +151,11 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
       ],
     ];
   },
+
+  // List token parsing priority: ordered > task > unordered, like parseHTML.
+  markdownTokenName: "list",
+  parseMarkdown: parseTaskMarkdown,
+  renderMarkdown: renderFlatListMarkdown,
 
   addNodeView() {
     // Return a NodeView (custom renderer) so that we can receive events from the checkbox.

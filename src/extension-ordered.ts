@@ -1,10 +1,14 @@
 import { Node } from "@tiptap/core";
 import { orderedNodeName } from "./internal/extension-names";
 import {
+  parseOrderedMarkdown,
+  renderFlatListMarkdown,
+} from "./internal/markdown";
+import {
   computeIndent,
+  flatListTypeInputRule,
   getIndent,
   indentAttr,
-  flatListTypeInputRule,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
 
@@ -111,6 +115,11 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
       ],
     ];
   },
+
+  // List token parsing priority: ordered > task > unordered, like parseHTML.
+  markdownTokenName: "list",
+  parseMarkdown: parseOrderedMarkdown,
+  renderMarkdown: renderFlatListMarkdown,
 
   addKeyboardShortcuts() {
     return {
