@@ -148,5 +148,29 @@ describe("Markdown", () => {
       });
       assert.deepEqual(summarize(editor), before);
     });
+
+    it("indents continuation lines after hard breaks", () => {
+      editor = createMarkdownEditor("");
+      editor.commands.setContent(
+        "<ul><li>a<br>a2<ol><li>b<br>b2<ul data-task-list><li>c<br>c2</li></ul></li></ol></li></ul>",
+      );
+      // Continuation lines line up with each item's content column.
+      assert.equal(
+        editor.getMarkdown(),
+        "- a  \n  a2\n\n    1. b  \n       b2\n\n        - [ ] c  \n          c2",
+      );
+    });
+
+    it("round-trips hard breaks", () => {
+      editor = createMarkdownEditor("");
+      editor.commands.setContent(
+        "<ul><li>a<br>a2<ol><li>b<br>b2<ul data-task-list><li>c<br>c2</li></ul></li></ol></li></ul>",
+      );
+      const before = editor.getJSON();
+      editor.commands.setContent(editor.getMarkdown(), {
+        contentType: "markdown",
+      });
+      assert.deepEqual(editor.getJSON(), before);
+    });
   });
 });

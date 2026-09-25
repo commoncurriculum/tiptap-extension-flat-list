@@ -47,7 +47,7 @@ export function parseNestedLists(
   });
 }
 
-// Four spaces per level, which every marker we write can carry: a nested item has to
+// Four spaces per level, which works with every list marker: a nested item has to
 // reach its parent's content column ("1. " is 3, "- " is 2) and stay within three
 // columns of it, or CommonMark reads it as a sibling item or as indented code.
 const INDENT_PER_LEVEL = "    ";
