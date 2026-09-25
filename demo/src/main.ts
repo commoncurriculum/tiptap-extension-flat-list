@@ -35,11 +35,11 @@ const editor = new Editor({
 // Setup buttons
 
 document.getElementById("ordered")!.onclick = () =>
-  editor.chain().focus().toggleFlatListItem("ordered").run();
+  editor.chain().focus().toggleFlatListItem("flatListItemOrdered").run();
 document.getElementById("unordered")!.onclick = () =>
-  editor.chain().focus().toggleFlatListItem("unordered").run();
+  editor.chain().focus().toggleFlatListItem("flatListItemUnordered").run();
 document.getElementById("task")!.onclick = () =>
-  editor.chain().focus().toggleFlatListItem("task").run();
+  editor.chain().focus().toggleFlatListItem("flatListItemTask").run();
 document.getElementById("indent")!.onclick = () =>
   editor.chain().focus().indentFlatListItem().run();
 document.getElementById("dedent")!.onclick = () =>

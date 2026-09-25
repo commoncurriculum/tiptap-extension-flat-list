@@ -1,5 +1,4 @@
 import { Node, type JSONContent } from "@tiptap/core";
-import { orderedNodeName } from "./internal/extension-names";
 import {
   parseItemContent,
   parseNestedLists,
@@ -12,6 +11,9 @@ import {
   indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
+import type { FlatListType } from "./list-type";
+
+const NODE_NAME = "flatListItemOrdered" satisfies FlatListType;
 
 export interface FlatListOrderedOptions {
   /**
@@ -28,7 +30,7 @@ export interface FlatListOrderedOptions {
  * If you use this extension, you must also use the FlatListCore extension.
  */
 export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
-  name: orderedNodeName,
+  name: NODE_NAME,
 
   group: "block",
 
@@ -130,7 +132,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
     for (const item of token.items ?? []) {
       nodes.push(
         helpers.createNode(
-          orderedNodeName,
+          NODE_NAME,
           { counter },
           parseItemContent(item, helpers),
         ),
@@ -145,7 +147,7 @@ export const FlatListOrdered = Node.create<FlatListOrderedOptions>({
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-7": () => this.editor.commands.toggleFlatListItem("ordered"),
+      "Mod-Shift-7": () => this.editor.commands.toggleFlatListItem(NODE_NAME),
     };
   },
 

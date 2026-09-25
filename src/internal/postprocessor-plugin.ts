@@ -1,7 +1,6 @@
 import { Node as PMNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { isFlatListNode } from "../list-type";
-import { orderedNodeName } from "./extension-names";
 import { getIndent, indentAttr } from "./utils";
 
 /**
@@ -77,7 +76,7 @@ export function flatListPostprocessorPlugin() {
 
           // 2. Counters
 
-          if (node.type.name === orderedNodeName) {
+          if (node.type.name === "flatListItemOrdered") {
             // indent is the *new* indent computed above.
             const counterValue = (lastCounters[indent] ?? 0) + 1;
 

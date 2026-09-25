@@ -77,18 +77,18 @@ console.log(JoinListDOMSerializer.getHTML(editor));
 
 ### Commands
 
-Note `type ListType = "ordered" | "unordered" | "task"`.
+Below, `type FlatListType = "flatListItemOrdered" | "flatListItemTask" | "flatListItemUnordered"` (the flat list extensions' node names).
 
 #### setFlatListItem
 
 Sets a flat list item node.
 
 If `attributes.indent` is not provided and any selected nodes are already flat list nodes
-(possibly a different ListType), their indent is preserved.
+(possibly a different list type), their indent is preserved.
 
 ```ts
 editor.commands.setFlatListItem(
-  listType: ListType,
+  listType: FlatListType,
   attributes?: { indent?: number; checked?: boolean }
 )
 ```
@@ -99,11 +99,11 @@ Toggles a flat list item node.
 
 When toggling on,
 if `attributes.indent` is not provided and any selected nodes are already flat list nodes
-(possibly a different ListType), their indent is preserved.
+(possibly a different list type), their indent is preserved.
 
 ```ts
 editor.commands.toggleFlatListItem(
-  listType: ListType,
+  listType: FlatListType,
   attributes?: { indent?: number; checked?: boolean }
 )
 ```

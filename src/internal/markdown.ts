@@ -4,11 +4,7 @@ import type {
   MarkdownRendererHelpers,
   MarkdownToken,
 } from "@tiptap/core";
-import {
-  orderedNodeName,
-  taskNodeName,
-  unorderedNodeName,
-} from "./extension-names";
+import { isFlatListType } from "../list-type";
 import { indentAttr } from "./utils";
 
 export function parseItemContent(
@@ -27,8 +23,6 @@ export function parseItemContent(
   return helpers.parseInline(inlineTokens);
 }
 
-const flatListNodeNames = [orderedNodeName, unorderedNodeName, taskNodeName];
-
 /**
  * Parses an item's nested lists through the registered handlers (so they use the same
  * fall-through as top-level lists), then indents the resulting flat list items one level.
@@ -41,7 +35,7 @@ export function parseNestedLists(
   if (nested.length === 0) return [];
 
   return helpers.parseChildren(nested).map((node) => {
-    if (!flatListNodeNames.includes(node.type ?? "")) return node;
+    if (!isFlatListType(node.type)) return node;
     const indent = (Number(node.attrs?.indent) || 0) + 1;
     return { ...node, attrs: { ...node.attrs, indent: indentAttr(indent) } };
   });
@@ -56,13 +50,13 @@ export function renderFlatListMarkdown(
   node: JSONContent,
   helpers: MarkdownRendererHelpers,
 ): string {
-  const ordered = node.type === orderedNodeName;
+  const ordered = node.type === "flatListItemOrdered";
   // Every ordered item is written "1.", so the marker is always two columns wide and a
   // child's indent never depends on its parent's number. Renderers number the items
   // themselves, and parsing renumbers them from the first, so nothing is lost.
   let marker = "-";
   if (ordered) marker = "1.";
-  else if (node.type === taskNodeName)
+  else if (node.type === "flatListItemTask")
     marker = `- [${node.attrs?.checked ? "x" : " "}]`;
 
   const indent = INDENT_PER_LEVEL.repeat(Number(node.attrs?.indent) || 0);

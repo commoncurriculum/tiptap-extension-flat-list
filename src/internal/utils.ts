@@ -1,7 +1,6 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
 import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { isFlatListNode, ListType } from "../list-type";
-import { taskNodeName } from "./extension-names";
+import { FlatListType, isFlatListNode } from "../list-type";
 
 /**
  * Returns a flat list node's indent level.
@@ -48,10 +47,13 @@ export function computeIndent(element: HTMLElement) {
   return Math.max(count, 0);
 }
 
-export function computeChecked(element: HTMLElement) {
+export function getBooleanAttribute(
+  element: Element,
+  attribute: string,
+): boolean {
   return (
-    element.hasAttribute("data-checked") &&
-    element.getAttribute("data-checked") !== "false"
+    element.hasAttribute(attribute) &&
+    element.getAttribute(attribute) !== "false"
   );
 }
 
@@ -69,11 +71,11 @@ export function parseIntegerAttr(attr: string | null): number | undefined {
  * else the LI itself. (Latter happens when it's copied content that got simplified by joinListElements.)
  */
 export function getContentElement(
-  listType: ListType,
+  listType: FlatListType,
   li: HTMLElement,
 ): HTMLElement {
   if (
-    listType === "task" &&
+    listType === "flatListItemTask" &&
     li.firstElementChild instanceof HTMLLabelElement &&
     li.lastElementChild instanceof HTMLElement
   ) {
@@ -173,7 +175,7 @@ export function flatListTypeInputRule(config: {
       }
 
       let checked: boolean | undefined = undefined;
-      if (config.type.name === taskNodeName) {
+      if (config.type.name === "flatListItemTask") {
         checked = match[match.length - 1]?.toLowerCase() === "x";
       }
 

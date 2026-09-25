@@ -1,5 +1,4 @@
 import { Node, type JSONContent } from "@tiptap/core";
-import { unorderedNodeName } from "./internal/extension-names";
 import {
   parseItemContent,
   parseNestedLists,
@@ -12,6 +11,9 @@ import {
   indentAttr,
   replaceParagraphsWithBreaks,
 } from "./internal/utils";
+import type { FlatListType } from "./list-type";
+
+const NODE_NAME = "flatListItemUnordered" satisfies FlatListType;
 
 export interface FlatListUnorderedOptions {
   /**
@@ -28,7 +30,7 @@ export interface FlatListUnorderedOptions {
  * If you use this extension, you must also use the FlatListCore extension.
  */
 export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
-  name: unorderedNodeName,
+  name: NODE_NAME,
 
   group: "block",
 
@@ -107,11 +109,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
     const nodes: JSONContent[] = [];
     for (const item of token.items ?? []) {
       nodes.push(
-        helpers.createNode(
-          unorderedNodeName,
-          {},
-          parseItemContent(item, helpers),
-        ),
+        helpers.createNode(NODE_NAME, {}, parseItemContent(item, helpers)),
       );
       nodes.push(...parseNestedLists(item, helpers));
     }
@@ -122,7 +120,7 @@ export const FlatListUnordered = Node.create<FlatListUnorderedOptions>({
 
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-8": () => this.editor.commands.toggleFlatListItem("unordered"),
+      "Mod-Shift-8": () => this.editor.commands.toggleFlatListItem(NODE_NAME),
     };
   },
 
