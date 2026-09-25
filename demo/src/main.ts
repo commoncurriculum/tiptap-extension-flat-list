@@ -10,7 +10,6 @@ import {
   FlatListOrdered,
   FlatListTask,
   FlatListUnordered,
-  JoinListDOMSerializer,
 } from "../../src/";
 
 // Setup editor
@@ -29,8 +28,6 @@ const editor = new Editor({
   ],
   content: "<p>Hello World!</p>",
 });
-
-JoinListDOMSerializer.setClipboardSerializer(editor);
 
 // To get HTML that uses normal HTML lists, instead of editor.getHTML(), call:
 // JoinListDOMSerializer.getHTML(editor);

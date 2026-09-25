@@ -20,7 +20,8 @@ import { ListType } from "./list-type";
  * lists look as similar as possible to the flat list in Tiptap.
  *
  * Uses:
- * - Call `JoinListDOMSerializer.setClipboardSerializer(editor)` to make copying use joined & nested lists.
+ * - FlatListCore calls `JoinListDOMSerializer.setClipboardSerializer(editor)` on create,
+ *   making copying use joined & nested lists.
  * - Call `JoinListDOMSerializer.getHTML(editor)` to get that HTML as a string (in place of `editor.getHTML()`).
  */
 export class JoinListDOMSerializer extends DOMSerializer {
@@ -54,6 +55,13 @@ export class JoinListDOMSerializer extends DOMSerializer {
     domSerializer: DOMSerializer,
     usedFor: "getHTML" | "clipboard" = "getHTML",
   ): JoinListDOMSerializer {
+    if (
+      domSerializer instanceof JoinListDOMSerializer &&
+      domSerializer.usedFor === usedFor
+    ) {
+      // Already has our behavior (e.g., setClipboardSerializer called again on remount).
+      return domSerializer;
+    }
     let cachedMap = this.cache.get(domSerializer);
     if (!cachedMap) {
       cachedMap = {};
@@ -82,11 +90,15 @@ export class JoinListDOMSerializer extends DOMSerializer {
   }
 
   /**
-   * Sets the editor's clipboardSerializer prop, apppending our behavior to the current value.
+   * Sets the editor's clipboardSerializer prop, appending our behavior to the current value.
+   *
+   * FlatListCore already calls this on create. You only need to call it again if you
+   * change `editorProps.clipboardSerializer` after that.
    */
   static setClipboardSerializer(editor: Editor) {
     editor.setOptions({
       editorProps: {
+        ...editor.options.editorProps,
         clipboardSerializer: JoinListDOMSerializer.from(
           editor.view.props.clipboardSerializer ??
             DOMSerializer.fromSchema(editor.schema),
