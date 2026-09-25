@@ -11,12 +11,10 @@ export type FlatListType =
  */
 export function isFlatListType(type: string | undefined): type is FlatListType {
   return (
-    [
-      "flatListItemOrdered",
-      "flatListItemTask",
-      "flatListItemUnordered",
-    ] as Array<string | undefined>
-  ).includes(type);
+    type === "flatListItemOrdered" ||
+    type === "flatListItemTask" ||
+    type === "flatListItemUnordered"
+  );
 }
 
 /**

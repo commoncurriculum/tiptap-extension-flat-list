@@ -20,7 +20,7 @@ declare module "@tiptap/core" {
        *
        * @param listType The flat list node type: "flatListItemOrdered" | "flatListItemTask" | "flatListItemUnordered"
        * @param attributes The node attributes
-       * @example editor.commands.setFlatList("flatListItemUnordered", { indent: 1 })
+       * @example editor.commands.setFlatListItem("flatListItemUnordered", { indent: 1 })
        */
       setFlatListItem: (
         listType: FlatListType,
@@ -35,7 +35,7 @@ declare module "@tiptap/core" {
        *
        * @param listType The flat list node type: "flatListItemOrdered" | "flatListItemTask" | "flatListItemUnordered"
        * @param attributes The node attributes
-       * @example editor.commands.toggleFlatList("flatListItemOrdered")
+       * @example editor.commands.toggleFlatListItem("flatListItemOrdered")
        */
       toggleFlatListItem: (
         listType: FlatListType,
