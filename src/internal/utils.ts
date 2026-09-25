@@ -18,6 +18,10 @@ export function getIndent(node: ProseMirrorNode): number {
  * so that it is omitted from the doc's JSON.
  */
 export function indentAttr(indent: number | undefined): number | undefined {
+  if (indent === undefined) return undefined;
+  if (indent < 0) {
+    throw new Error("Invalid indent: " + indent);
+  }
   return indent === 0 ? undefined : indent;
 }
 
