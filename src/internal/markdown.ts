@@ -11,94 +11,7 @@ import {
 } from "./extension-names";
 import { indentAttr } from "./utils";
 
-// Markdown parsing works like parseHTML: each installed flat list extension registers a
-// parseMarkdown handler for marked's "list" token, and @tiptap/markdown tries them in
-// priority order (ordered > task > unordered), using the first non-empty result.
-// Returning [] falls through to the next handler. Nested lists and item runs we don't
-// claim are re-dispatched through helpers.parseChildren, so they fall through too.
-
-export function parseOrderedMarkdown(
-  token: MarkdownToken,
-  helpers: MarkdownParseHelpers,
-): JSONContent[] {
-  // Fall through to task or unordered list (if installed).
-  if (!token.ordered) return [];
-
-  const nodes: JSONContent[] = [];
-  // CommonMark: the first item's number starts the list and the rest are
-  // disregarded, so a list written as repeated "1." numbers 1, 2, 3.
-  let counter = Number(token.start) || 1;
-  for (const item of token.items ?? []) {
-    nodes.push(
-      helpers.createNode(
-        orderedNodeName,
-        { counter },
-        parseItemContent(item, helpers),
-      ),
-    );
-    counter++;
-    nodes.push(...parseNestedLists(item, helpers));
-  }
-  return nodes;
-}
-
-export function parseTaskMarkdown(
-  token: MarkdownToken,
-  helpers: MarkdownParseHelpers,
-): JSONContent[] {
-  const items = token.items ?? [];
-  // Fall through to unordered list (if installed).
-  if (!items.some((item) => item.task)) return [];
-
-  // Markdown marks tasks per item, so claim only the task items and re-dispatch runs
-  // of other items as their own list tokens.
-  const nodes: JSONContent[] = [];
-  let otherItems: MarkdownToken[] = [];
-  const flushOtherItems = () => {
-    if (otherItems.length === 0) return;
-    nodes.push(...helpers.parseChildren([{ ...token, items: otherItems }]));
-    otherItems = [];
-  };
-
-  for (const item of items) {
-    if (!item.task) {
-      otherItems.push(item);
-      continue;
-    }
-    flushOtherItems();
-    nodes.push(
-      helpers.createNode(
-        taskNodeName,
-        { checked: item.checked === true },
-        parseItemContent(item, helpers),
-      ),
-    );
-    nodes.push(...parseNestedLists(item, helpers));
-  }
-  flushOtherItems();
-  return nodes;
-}
-
-export function parseUnorderedMarkdown(
-  token: MarkdownToken,
-  helpers: MarkdownParseHelpers,
-): JSONContent[] {
-  // Last in the priority order, so all remaining lists become unordered.
-  const nodes: JSONContent[] = [];
-  for (const item of token.items ?? []) {
-    nodes.push(
-      helpers.createNode(
-        unorderedNodeName,
-        {},
-        parseItemContent(item, helpers),
-      ),
-    );
-    nodes.push(...parseNestedLists(item, helpers));
-  }
-  return nodes;
-}
-
-function parseItemContent(
+export function parseItemContent(
   item: MarkdownToken,
   helpers: MarkdownParseHelpers,
 ): JSONContent[] {
@@ -120,7 +33,7 @@ const flatListNodeNames = [orderedNodeName, unorderedNodeName, taskNodeName];
  * Parses an item's nested lists through the registered handlers (so they use the same
  * fall-through as top-level lists), then indents the resulting flat list items one level.
  */
-function parseNestedLists(
+export function parseNestedLists(
   item: MarkdownToken,
   helpers: MarkdownParseHelpers,
 ): JSONContent[] {
