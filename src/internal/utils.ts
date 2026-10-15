@@ -76,8 +76,8 @@ export function getContentElement(
 ): HTMLElement {
   if (
     listType === "flatListItemTask" &&
-    li.firstElementChild instanceof HTMLLabelElement &&
-    li.lastElementChild instanceof HTMLElement
+    li.firstElementChild?.tagName === "LABEL" &&
+    isElement(li.lastElementChild)
   ) {
     return li.lastElementChild;
   } else return li;
@@ -109,7 +109,7 @@ export function replaceParagraphsWithBreaks(element: HTMLElement): void {
   const originalChildNodes = Array.from(element.childNodes);
   for (let i = 0; i < originalChildNodes.length; i++) {
     const child = originalChildNodes[i];
-    if (!(child instanceof HTMLElement && child.tagName === "P")) continue;
+    if (!(isElement(child) && child.tagName === "P")) continue;
 
     // Move the paragraph's content to the parent
     const grandchildren = Array.from(child.childNodes);
@@ -120,7 +120,7 @@ export function replaceParagraphsWithBreaks(element: HTMLElement): void {
     if (i < originalChildNodes.length - 1) {
       const nextChild = originalChildNodes[i + 1];
       if (
-        nextChild instanceof HTMLElement &&
+        isElement(nextChild) &&
         ["OL", "UL", "LI"].includes(nextChild.tagName)
       ) {
         // nextChild will be parsed as a separate flat-list-item by ProseMirror.
@@ -136,6 +136,14 @@ export function replaceParagraphsWithBreaks(element: HTMLElement): void {
   }
 
   return;
+}
+
+/**
+ * Returns whether node is an element without assuming a global DOM.
+ */
+function isElement(node: Node | null | undefined): node is HTMLElement {
+  // 1 = Node.ELEMENT_NODE
+  return node != null && node.nodeType === 1;
 }
 
 /**
