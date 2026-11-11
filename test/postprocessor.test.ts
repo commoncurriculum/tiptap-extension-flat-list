@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { Editor } from "@tiptap/core";
-import { createEditor, setCursorIn, summarize } from "./helpers";
+import { createEditor, setCursorIn, summarize } from "./helpers.ts";
 
 /**
  * Tests for the counter/indent behavior that applies during normal edits,

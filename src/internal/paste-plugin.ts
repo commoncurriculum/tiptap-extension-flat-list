@@ -1,6 +1,6 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { isFlatListNode } from "../list-type";
-import { getIndent, indentAttr } from "./utils";
+import { isFlatListNode } from "../list-type.ts";
+import { getIndent, indentAttr } from "./utils.ts";
 
 /**
  * ProseMirror plugin that massages pasted list items.

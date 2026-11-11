@@ -5,6 +5,9 @@
     "target": "es2022",
     "module": "es2022",
     "moduleResolution": "bundler",
+    /* Source imports use .ts extensions; rewrite them to .js in the output so
+       the build loads in native ESM runtimes (Node, Bun) without a bundler. */
+    "rewriteRelativeImportExtensions": true,
     /* Enable strict type checking. */
     "strict": true,
     /* Enable interop with dependencies using different module systems. */

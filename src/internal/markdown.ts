@@ -4,8 +4,8 @@ import type {
   MarkdownRendererHelpers,
   MarkdownToken,
 } from "@tiptap/core";
-import { isFlatListType } from "../list-type";
-import { indentAttr } from "./utils";
+import { isFlatListType } from "../list-type.ts";
+import { indentAttr } from "./utils.ts";
 
 export function parseItemContent(
   item: MarkdownToken,

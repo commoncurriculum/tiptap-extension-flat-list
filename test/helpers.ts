@@ -1,5 +1,5 @@
 // Must come first: installs the jsdom globals that Tiptap needs.
-import "./setup";
+import "./setup.ts";
 
 import { Editor } from "@tiptap/core";
 import Document from "@tiptap/extension-document";
@@ -13,8 +13,8 @@ import {
   FlatListTask,
   FlatListUnordered,
   type FlatListTaskOptions,
-} from "../src/index";
-import { isFlatListType, type FlatListType } from "../src/list-type";
+} from "../src/index.ts";
+import { isFlatListType, type FlatListType } from "../src/list-type.ts";
 
 /**
  * Creates an Editor with all flat list extensions, attached to a fresh jsdom element.

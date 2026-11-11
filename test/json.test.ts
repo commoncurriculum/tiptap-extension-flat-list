@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import type { Editor, JSONContent } from "@tiptap/core";
-import { createEditor, setCursorIn } from "./helpers";
+import { createEditor, setCursorIn } from "./helpers.ts";
 
 /** Returns each top-level block's attrs, as they appear in the doc's (stringified) JSON. */
 function jsonAttrs(editor: Editor): JSONContent["attrs"][] {

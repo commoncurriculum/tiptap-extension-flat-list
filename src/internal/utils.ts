@@ -1,6 +1,6 @@
 import { InputRule, InputRuleFinder } from "@tiptap/core";
 import { NodeType, type Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { FlatListType, isFlatListNode } from "../list-type";
+import { FlatListType, isFlatListNode } from "../list-type.ts";
 
 /**
  * Returns a flat list node's indent level.

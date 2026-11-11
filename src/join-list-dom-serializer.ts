@@ -11,8 +11,8 @@ import {
   getBooleanAttribute,
   getContentElement,
   parseIntegerAttr,
-} from "./internal/utils";
-import { FlatListType } from "./list-type";
+} from "./internal/utils.ts";
+import { FlatListType } from "./list-type.ts";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list/blob/master/packages/core/src/utils/list-serializer.ts
 

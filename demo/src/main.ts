@@ -10,7 +10,7 @@ import {
   FlatListOrdered,
   FlatListTask,
   FlatListUnordered,
-} from "../../src/";
+} from "../../src/index.ts";
 
 // Setup editor
 

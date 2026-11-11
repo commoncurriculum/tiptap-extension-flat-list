@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { assert } from "chai";
-import { JoinListDOMSerializer } from "../src/index";
-import { createEditor, setCursorIn, summarize } from "./helpers";
+import { JoinListDOMSerializer } from "../src/index.ts";
+import { createEditor, setCursorIn, summarize } from "./helpers.ts";
 
 /**
  * Tests for loading "normal" (nested) HTML lists and writing them back out

@@ -29,6 +29,9 @@ module.exports = {
     "import/no-default-export": "error",
     // Impose alphabetically ordered imports.
     "import/order": "error",
+    // Require file extensions on relative imports (e.g. "./name.ts"), which
+    // rewriteRelativeImportExtensions turns into ".js" for native ESM runtimes.
+    "import/extensions": ["error", "ignorePackages"],
     // Allow implicit string casts in template literals.
     "@typescript-eslint/restrict-template-expressions": "off",
     // Allow ts-ignore with justification.
