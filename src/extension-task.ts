@@ -4,7 +4,7 @@ import {
   parseItemContent,
   parseNestedLists,
   renderFlatListMarkdown,
-} from "./internal/markdown";
+} from "./internal/markdown.ts";
 import {
   computeIndent,
   flatListTypeInputRule,
@@ -13,8 +13,8 @@ import {
   getIndent,
   indentAttr,
   replaceParagraphsWithBreaks,
-} from "./internal/utils";
-import type { FlatListType } from "./list-type";
+} from "./internal/utils.ts";
+import type { FlatListType } from "./list-type.ts";
 
 const NODE_NAME = "flatListItemTask" satisfies FlatListType;
 

@@ -18,9 +18,21 @@
     "quill"
   ],
   "main": "build/commonjs/index.js",
-  "browser": "build/esm/index.js",
   "module": "build/esm/index.js",
   "types": "build/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./build/esm/index.d.ts",
+        "default": "./build/esm/index.js"
+      },
+      "require": {
+        "types": "./build/commonjs/index.d.ts",
+        "default": "./build/commonjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "/build",
     "/src"
@@ -58,13 +70,13 @@
     "prettier": "^3.6.2",
     "tsx": "^4.23.1",
     "typedoc": "^0.28.10",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "vite": "^7.1.2"
   },
   "scripts": {
     "start": "vite serve demo",
     "prepack": "pnpm run clean && pnpm run lint && pnpm run build && pnpm run test",
-    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.commonjs.json",
+    "build": "tsc -p tsconfig.esm.json && tsc -p tsconfig.commonjs.json && node -e \"require('fs').writeFileSync('build/esm/package.json', JSON.stringify({type: 'module'}))\"",
     "lint": "pnpm run \"/^lint:.*/\"",
     "lint:tsc": "tsc -p tsconfig.json",
     "lint:eslint": "eslint .",

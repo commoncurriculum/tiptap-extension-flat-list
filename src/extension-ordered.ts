@@ -3,15 +3,15 @@ import {
   parseItemContent,
   parseNestedLists,
   renderFlatListMarkdown,
-} from "./internal/markdown";
+} from "./internal/markdown.ts";
 import {
   computeIndent,
   flatListTypeInputRule,
   getIndent,
   indentAttr,
   replaceParagraphsWithBreaks,
-} from "./internal/utils";
-import type { FlatListType } from "./list-type";
+} from "./internal/utils.ts";
+import type { FlatListType } from "./list-type.ts";
 
 const NODE_NAME = "flatListItemOrdered" satisfies FlatListType;
 

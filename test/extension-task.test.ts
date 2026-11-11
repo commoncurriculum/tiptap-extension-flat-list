@@ -1,8 +1,8 @@
 import type { Editor } from "@tiptap/core";
 import { DOMSerializer, Fragment } from "@tiptap/pm/model";
 import { assert } from "chai";
-import { indentAttr } from "../src/internal/utils";
-import { createEditor } from "./helpers";
+import { indentAttr } from "../src/internal/utils.ts";
+import { createEditor } from "./helpers.ts";
 
 /**
  * Tests for FlatListTask's renderHTML, which is what getHTML/copying use.

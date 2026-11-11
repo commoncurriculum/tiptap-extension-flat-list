@@ -1,5 +1,5 @@
 // Must come first: installs the jsdom globals that Tiptap needs.
-import "./setup";
+import "./setup.ts";
 
 import { assert } from "chai";
 import { Editor, type AnyExtension } from "@tiptap/core";
@@ -13,8 +13,8 @@ import {
   FlatListOrdered,
   FlatListTask,
   FlatListUnordered,
-} from "../src/index";
-import { summarize } from "./helpers";
+} from "../src/index.ts";
+import { summarize } from "./helpers.ts";
 
 const allLists = [FlatListOrdered, FlatListTask, FlatListUnordered];
 

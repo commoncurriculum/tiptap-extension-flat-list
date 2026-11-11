@@ -72,7 +72,7 @@ importers:
         specifier: ^0.28.10
         version: 0.28.20(typescript@5.9.3)
       typescript:
-        specifier: ^5.9.2
+        specifier: ^5.9.3
         version: 5.9.3
       vite:
         specifier: ^7.1.2

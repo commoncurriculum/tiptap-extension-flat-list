@@ -1,11 +1,11 @@
 import { Editor, Extension, getNodeType, isNodeActive } from "@tiptap/core";
 import { setBlockType } from "@tiptap/pm/commands";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { flatListPastePlugin } from "./internal/paste-plugin";
-import { flatListPostprocessorPlugin } from "./internal/postprocessor-plugin";
-import { getIndent, indentAttr } from "./internal/utils";
-import { JoinListDOMSerializer } from "./join-list-dom-serializer";
-import { FlatListType, isFlatListNode } from "./list-type";
+import { flatListPastePlugin } from "./internal/paste-plugin.ts";
+import { flatListPostprocessorPlugin } from "./internal/postprocessor-plugin.ts";
+import { getIndent, indentAttr } from "./internal/utils.ts";
+import { JoinListDOMSerializer } from "./join-list-dom-serializer.ts";
+import { FlatListType, isFlatListNode } from "./list-type.ts";
 
 // Based on https://github.com/ocavue/prosemirror-flat-list
 // and https://github.com/ueberdosis/tiptap/blob/main/packages/extension-heading/src/heading.ts
