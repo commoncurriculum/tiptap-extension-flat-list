@@ -254,16 +254,11 @@ export const FlatListTask = Node.create<FlatListTaskOptions>({
             .focus(undefined, { scrollIntoView: false })
             .command(({ tr }) => {
               const position = getPos();
-
               if (typeof position !== "number") {
                 return false;
               }
-              const currentNode = tr.doc.nodeAt(position);
 
-              tr.setNodeMarkup(position, undefined, {
-                ...currentNode?.attrs,
-                checked,
-              });
+              tr.setNodeAttribute(position, "checked", checked);
 
               return true;
             })

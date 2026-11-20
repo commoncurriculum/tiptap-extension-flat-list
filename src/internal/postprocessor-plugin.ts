@@ -20,8 +20,7 @@ export function flatListPostprocessorPlugin() {
     appendTransaction(transactions, _oldState, newState) {
       if (!transactions.some((tr) => tr.docChanged)) return null;
 
-      let tr = newState.tr;
-      let updated = false;
+      const tr = newState.tr;
 
       // State for the current run of list items within each actual parent node.
       const parentStates = new Map<
@@ -43,9 +42,6 @@ export function flatListPostprocessorPlugin() {
             parentStates.set(parent, parentState);
           }
           const { lastCounters, ancestors } = parentState;
-
-          const oldAttrs = node.attrs;
-          let nodeAttrs = oldAttrs;
 
           // 1. Indents
 
@@ -71,7 +67,7 @@ export function flatListPostprocessorPlugin() {
           ancestors.push({ oldIndent, newIndent: indent });
 
           if (indent !== oldIndent) {
-            nodeAttrs = { ...nodeAttrs, indent: indentAttr(indent) };
+            tr.setNodeAttribute(pos, "indent", indentAttr(indent));
           }
 
           // 2. Counters
@@ -81,8 +77,8 @@ export function flatListPostprocessorPlugin() {
             const counterValue = (lastCounters[indent] ?? 0) + 1;
 
             // If the node’s current counter attribute doesn't match the computed value, update it.
-            if (nodeAttrs.counter !== counterValue) {
-              nodeAttrs = { ...nodeAttrs, counter: counterValue };
+            if (counterValue !== node.attrs.counter) {
+              tr.setNodeAttribute(pos, "counter", counterValue);
             }
 
             // Update the counter value for this indent level.
@@ -92,11 +88,6 @@ export function flatListPostprocessorPlugin() {
           } else {
             // Non-ordered list block. Reset the counter value for this and higher indent levels.
             lastCounters.length = indent;
-          }
-
-          if (nodeAttrs !== oldAttrs) {
-            tr = tr.setNodeMarkup(pos, undefined, nodeAttrs);
-            updated = true;
           }
         } else {
           // Not a list block. Reset all counters and indents.
@@ -108,11 +99,12 @@ export function flatListPostprocessorPlugin() {
       });
 
       // If any node was updated, apply the transaction.
-      if (updated) {
+      if (tr.docChanged) {
         // We need to restore the storedMarks per https://discuss.prosemirror.net/t/does-tr-setnodeattribute-reset-stored-marks/6147
         // Otherwise hitting enter after an ordered list item loses them.
         tr.setStoredMarks(newState.storedMarks);
         tr.setMeta("addToHistory", false);
+        tr.setMeta("addToCollab", false);
         return tr;
       } else {
         return null;
