@@ -104,6 +104,7 @@ export function flatListPostprocessorPlugin() {
         // Otherwise hitting enter after an ordered list item loses them.
         tr.setStoredMarks(newState.storedMarks);
         tr.setMeta("addToHistory", false);
+        tr.setMeta("addToCollab", false);
         return tr;
       } else {
         return null;
