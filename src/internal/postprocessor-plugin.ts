@@ -21,7 +21,6 @@ export function flatListPostprocessorPlugin() {
       if (!transactions.some((tr) => tr.docChanged)) return null;
 
       const tr = newState.tr;
-      let updated = false;
 
       // State for the current run of list items within each actual parent node.
       const parentStates = new Map<
@@ -69,7 +68,6 @@ export function flatListPostprocessorPlugin() {
 
           if (indent !== oldIndent) {
             tr.setNodeAttribute(pos, "indent", indentAttr(indent));
-            updated = true;
           }
 
           // 2. Counters
@@ -81,7 +79,6 @@ export function flatListPostprocessorPlugin() {
             // If the node’s current counter attribute doesn't match the computed value, update it.
             if (counterValue !== node.attrs.counter) {
               tr.setNodeAttribute(pos, "counter", counterValue);
-              updated = true;
             }
 
             // Update the counter value for this indent level.
@@ -102,7 +99,7 @@ export function flatListPostprocessorPlugin() {
       });
 
       // If any node was updated, apply the transaction.
-      if (updated) {
+      if (tr.docChanged) {
         // We need to restore the storedMarks per https://discuss.prosemirror.net/t/does-tr-setnodeattribute-reset-stored-marks/6147
         // Otherwise hitting enter after an ordered list item loses them.
         tr.setStoredMarks(newState.storedMarks);
