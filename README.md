@@ -133,7 +133,7 @@ editor.commands.dedentFlatListItem(canConvert?: boolean)
 ## Developing
 
 - Install dependencies with `pnpm install`.
-- Run the demo (in demo/) with `npm start`.
+- Run the demo (in demo/) with `pnpm start`.
 - Build with `pnpm run build`.
 - Check with `pnpm lint` and `pnpm test`.
 - Preview typedoc with `pnpm typedoc`.
